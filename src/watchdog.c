@@ -119,12 +119,6 @@ static void __watchdog_free(void *ptr, char *file, size_t line) {
     __frees += 1;
 }
 
-/* If track is enabled log the call on the appropriate stream else do nothing */
-#define TRACE(stream, format, ...) \
-    do { \
-        fprintf(STREAM, format, __VA_ARGS__); \
-    } while (0)
-
 /*
  * Public functions
  */
@@ -196,7 +190,7 @@ void watchdog_collect(void) {
  * Protected functions
  */
 void *watchdog_malloc(size_t size, char *_file, size_t _line) {
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- malloc  : %zu bytes requested\n", _file, _line, size);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- malloc  : %zu bytes requested\n", _file, _line, size);
     void *data = __watchdog_allocate(size, _file, _line, false);
     if (data) {
         fprintf(STREAM, "[WATCHDOG] DONE: at (%s:%zu) -- malloc  : %zu bytes allocated to address %p\n", _file, _line, size, data);
@@ -208,7 +202,7 @@ void *watchdog_malloc(size_t size, char *_file, size_t _line) {
 
 void *watchdog_calloc(size_t num, size_t size, char *_file, size_t _line) {
     const size_t actual_size = num * size;
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- calloc  : %zu bytes requested\n", _file, _line, actual_size);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- calloc  : %zu bytes requested\n", _file, _line, actual_size);
     void *data = __watchdog_allocate(actual_size, _file, _line, true);
     if (data) {
         fprintf(STREAM, "[WATCHDOG] DONE: at (%s:%zu) -- calloc  : %zu bytes allocated to address %p\n", _file, _line, actual_size, data);
@@ -219,7 +213,7 @@ void *watchdog_calloc(size_t num, size_t size, char *_file, size_t _line) {
 }
 
 void *watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line) {
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- realloc : %zu bytes requested\n", _file, _line, size);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- realloc : %zu bytes requested\n", _file, _line, size);
     void *data = __watchdog_reallocate(ptr, size, _file, _line);
     if (data) {
         fprintf(STREAM, "[WATCHDOG] DONE: at (%s:%zu) -- realloc : %zu bytes reallocated from address %p to address %p\n", _file, _line, size, ptr, data);
@@ -230,16 +224,16 @@ void *watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line) {
 }
 
 void watchdog_free(void *ptr, char *_file, size_t _line) {
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- free    : address %p\n", _file, _line, ptr);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- free    : address %p\n", _file, _line, ptr);
     __watchdog_free(ptr, _file, _line);
 }
 
 void watchdog_exit(int status, char *_file, size_t _line) {
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- exit    : status %d\n", _file, _line, status);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- exit    : status %d\n", _file, _line, status);
     exit(status);
 }
 
 void watchdog_abort(char *_file, size_t _line) {
-    TRACE(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- abort\n", _file, _line);
+    fprintf(STREAM, "[WATCHDOG] CALL: at (%s:%zu) -- abort\n", _file, _line);
     abort();
 }
