@@ -1,28 +1,34 @@
-[MEMORY] DUMP: 0 allocations, 0 reallocations, 0 frees
-[MEMORY]       HEAP: 0 bytes currently allocated
-[MEMORY] CALL: malloc(6) in (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46)
-[MEMORY] CALL: calloc(8, 1) in (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47)
-[MEMORY] DUMP: 2 allocations, 0 reallocations, 0 frees
-[MEMORY] address 0x5204358:
-[MEMORY]          malloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
-[MEMORY] address 0x5204508:
-[MEMORY]          calloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
-[MEMORY]       HEAP: 14 bytes currently allocated
-[MEMORY] CALL: realloc(0x5204358, 10) in (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51)
-[MEMORY] DUMP: 2 allocations, 1 reallocations, 0 frees
-[MEMORY] address 0x5204358:
-[MEMORY]          malloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
-[MEMORY]          realloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51):   10 bytes allocated
-[MEMORY] address 0x5204508:
-[MEMORY]          calloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
-[MEMORY]       HEAP: 18 bytes currently allocated
-[MEMORY] CALL: calloc(5, 4) in (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:55)
-[MEMORY] DUMP: 3 allocations, 1 reallocations, 0 frees
-[MEMORY] address 0x5204358:
-[MEMORY]          malloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
-[MEMORY]          realloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51):   10 bytes allocated
-[MEMORY] address 0x5204508:
-[MEMORY]          calloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
-[MEMORY] address 0x52047c8:
-[MEMORY]          calloc at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:55):   20 bytes allocated
-[MEMORY]       HEAP: 38 bytes currently allocated
+[WATCHDOG] DUMP: 0 allocations, 0 reallocations, 0 frees
+[WATCHDOG]       ---- 0 bytes currently allocated
+[WATCHDOG] CALL: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46) -- malloc  : 6 bytes requested
+[WATCHDOG] DONE: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46) -- malloc  : 6 bytes allocated to address 0x52043b8
+[WATCHDOG] CALL: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47) -- calloc  : 8 bytes requested
+[WATCHDOG] DONE: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47) -- calloc  : 8 bytes allocated to address 0x5204618
+[WATCHDOG] DUMP: 2 allocations, 0 reallocations, 0 frees
+[WATCHDOG]       address 0x52043b8:
+[WATCHDOG]            malloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
+[WATCHDOG]       address 0x5204618:
+[WATCHDOG]            calloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
+[WATCHDOG]       ---- 14 bytes currently allocated
+[WATCHDOG] CALL: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51) -- realloc : 10 bytes requested
+[WATCHDOG] DONE: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51) -- realloc : 10 bytes reallocated from address 0x52043b8 to address 0x5204878
+[WATCHDOG] DUMP: 2 allocations, 1 reallocations, 0 frees
+[WATCHDOG]       address 0x5204878:
+[WATCHDOG]            malloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
+[WATCHDOG]            realloc    at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51):   10 bytes allocated
+[WATCHDOG]       address 0x5204618:
+[WATCHDOG]            calloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
+[WATCHDOG]       ---- 18 bytes currently allocated
+[WATCHDOG] CALL: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:55) -- calloc  : 20 bytes requested
+[WATCHDOG] DONE: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:55) -- calloc  : 20 bytes allocated to address 0x52049d8
+[WATCHDOG] CALL: at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:56) -- free    : address 0x52049d8
+[WATCHDOG] DUMP: 3 allocations, 1 reallocations, 1 frees
+[WATCHDOG]       address 0x5204878:
+[WATCHDOG]            malloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:46):    6 bytes allocated
+[WATCHDOG]            realloc    at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:51):   10 bytes allocated
+[WATCHDOG]       address 0x5204618:
+[WATCHDOG]            calloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:47):    8 bytes allocated
+[WATCHDOG]       address 0x52049d8:
+[WATCHDOG]            calloc     at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:55):   20 bytes allocated
+[WATCHDOG]            free       at (/home/daddinuz/Workspace/C/Watchdog/examples/example.c:56):    0 bytes allocated
+[WATCHDOG]       ---- 18 bytes currently allocated
