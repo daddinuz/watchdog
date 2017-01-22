@@ -9,11 +9,6 @@
 #include <stdio.h>
 #include <stddef.h>
 
-/*
- * Some useful symbols to define at compile time
- *      MEMORY_PRESERVE_INFO   => Will preserve memory allocations history
- *      MEMORY_ENABLE_TRACKING => Will log memory usage (allocations, reallocations, frees, exits, aborts...)
- */
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
 
