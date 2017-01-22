@@ -45,7 +45,7 @@ typedef struct memory_chunk_t {
 } memory_chunk_t;
 
 static FILE *__stream = NULL;
-static XorList_t *__info_list = NULL, *__chunk_list = NULL;
+static XorList_t *__info_list = NULL, *__chunk_list = NULL; /* TODO : use skip lists instead of xor lists or use iterators */
 static size_t __allocations = 0, __reallocations = 0, __frees = 0;
 
 /* Check if a stream is set otherwise redirect to stderr */
