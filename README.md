@@ -1,7 +1,7 @@
 Watchdog
 =========
 
-Watchdog is a C99-compliant memory tracer library useful to find memory leak or analyze memory usage of your programs at runtime.  
+Watchdog is a C99-compliant memory tracer library useful to find memory leaks or analyze memory usage of your programs.  
 Watchdog also provides some basic garbage collection utilities. 
 
 ```sh
