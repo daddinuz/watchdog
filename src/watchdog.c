@@ -27,9 +27,6 @@
 #include "colt/xor_list.h"
 
 
-/*
- * Struct to hold memory block's info
- */
 typedef struct memory_trace_t {
     char *action;
     char *file;
