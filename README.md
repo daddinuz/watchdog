@@ -3,12 +3,12 @@ Watchdog
 
 Watchdog is a C99-compliant memory tracer library useful to find memory leaks or analyze memory usage of your programs.  
 Basically Watchdog creates a layer over the C stdlib.h routines used to manage memory such as 'malloc'/'free' in order 
-to maintain the whole "history" of your dynamic allocated variables with a small overhead over performances and memory.
+to maintain the whole "history" of your dynamic allocated variables with a small overhead over performances and memory.  
 This feature may come in handy in development stage, during a memory leak hunting session, while analyzing the memory 
-bottle-neck of you program, or for smaller applications, it can just help to focus on coding leaving the boiler plate of 
+bottle-neck of you program, or for smaller applications, it can help to focus on coding leaving the boiler plate of 
 memory de-allocation to the basic garbage collection utility that Watchdog provides. 
 
-This is the memory report of the example program under the examples/ folder:
+This is the memory report of the example program under the `examples/` folder:
   
 ```bash
 $ ./bin/example
