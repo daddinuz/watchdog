@@ -15,7 +15,7 @@
 /*
  * Public functions
  */
-extern void watchdog_initialize(const char *path);
+extern void watchdog_initialize(FILE *stream);
 extern void watchdog_terminate(void);
 
 /*

@@ -14,17 +14,14 @@
 
 
 /*
- * Terminate will be called before exit, will print out a memory
- * report, perform a garbage collect and call watchdog_terminate().
+ * Print a memory summary, perform a garbage collection and terminate Watchdog.
  */
 void terminate(void);
 
-/*
- *
- */
+
 int main(void) {
-    watchdog_initialize("<stderr>"); /* Initialize Watchdog and set stderr as output stream */
-    atexit(terminate);               /* Register a cleanup function to be called before exit. */
+    watchdog_initialize(stdout);    /* Initialize Watchdog and set stdout as output stream. */
+    atexit(terminate);              /* Register a cleanup function to be called before exit. */
 
     watchdog_dump();
 
@@ -37,7 +34,7 @@ int main(void) {
     str = realloc(str, 12);
     free(str);
 
-    return EXIT_SUCCESS; /* Will call terminate() */
+    return EXIT_SUCCESS;            /* Will call terminate() */
 }
 
 void terminate(void) {
