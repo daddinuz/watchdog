@@ -7,20 +7,15 @@
  */
 
 /**
- * WARNING: always include watchdog.h after stdlib.h
+ * WARNING: always include Watchdog.h after stdlib.h
  */
 #include <stdlib.h>
-#include <stdio.h>
-#include "Watchdog/watchdog.h"
+#include "Watchdog/Watchdog.h"
+
 
 /*
- * File to redirect watchdog.h outputs
- */
-FILE *file = NULL;
-
-/*
- * Terminate will be called before exit, will print
- * out a memory report and perform a garbage collect
+ * Terminate will be called before exit, will print out a memory
+ * report, perform a garbage collect and call watchdog_terminate().
  */
 void terminate(void);
 
@@ -28,41 +23,24 @@ void terminate(void);
  *
  */
 int main(void) {
-    watchdog_initialize();
-
-    /*
-     * Register terminate() to be called when the program exits normally
-     */
-    atexit(terminate);
-
-    file = fopen("watchdog.log", "w");
-    if (NULL == file) {
-        fprintf(stderr, "Unable to open file: 'watchdog.log'\n");
-        abort();            /** Will not call terminate **/
-    }
-    watchdog_set_output_stream(file);
-    watchdog_dump();
-
-    char *foo = malloc(6 * sizeof(char));
-    char *moo = calloc(8, sizeof(char));
+    watchdog_initialize("<stderr>"); /* Initialize Watchdog and set stderr as output stream */
+    atexit(terminate);               /* Register a cleanup function to be called before exit. */
 
     watchdog_dump();
 
-    foo = realloc(foo, 10 * sizeof(char));
+    /* no free, this will leak */
+    double *number = malloc(sizeof(double));
 
     watchdog_dump();
 
-    int *data = calloc(5, sizeof(int));
-    free(data);
+    char *str = calloc(10, sizeof(char));
+    str = realloc(str, 12);
+    free(str);
 
-    watchdog_dump();
-
-    return EXIT_SUCCESS;    /** Will call terminate **/
+    return EXIT_SUCCESS; /* Will call terminate() */
 }
 
 void terminate(void) {
-    fclose(file);
-    watchdog_set_output_stream(stderr);
     watchdog_dump();
     watchdog_collect();
     watchdog_terminate();

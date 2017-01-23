@@ -15,14 +15,13 @@
 /*
  * Public functions
  */
-extern void watchdog_initialize(void);
+extern void watchdog_initialize(const char *path);
 extern void watchdog_terminate(void);
-extern void watchdog_set_output_stream(FILE *stream);
 extern void watchdog_dump(void);
 extern void watchdog_collect(void); /* WARN: It's highly recommended to call this function only before program exits */
 
 /*
- * Protected functions
+ * Protected functions / use the macros instead
  */
 extern void *watchdog_malloc(size_t size, char *_file, size_t _line);
 extern void *watchdog_calloc(size_t num, size_t size, char *_file, size_t _line);
