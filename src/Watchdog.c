@@ -55,57 +55,25 @@ typedef struct chunk_t {
  * Global variables
  */
 static FILE *__stream = NULL;
+static bool __initialized = false;
 static XorList_t *__info_list = NULL, *__chunk_list = NULL; /* TODO use iterators (when Colt will implement them) */
 static size_t __allocations_counter = 0, __frees_counter = 0;
 
 /*
  * Internal functions declaration
  */
+static void __watchdog_initialize(void);
+static void __watchdog_terminate(void);
 static char *__watchdog_func2string(func_t func);
 static void *__watchdog_allocate(size_t size, bool clear, char *file, size_t line);
 static void *__watchdog_reallocate(void *ptr, size_t size, char *file, size_t line);
 static size_t __watchdog_free(void *ptr, char *file, size_t line);
 
 /*
- * Public functions definitions
- */
-void watchdog_initialize(FILE *stream) {
-    __info_list = xor_list_new();
-    __chunk_list = xor_list_new();
-    __stream = stream ? stream : stderr;
-    fputs("[WATCHDOG] INFO: Watchdog initialized\n", __stream);
-}
-
-void watchdog_terminate(void) {
-    size_t bytes_allocated = 0, bytes_freed = 0, bytes_counter = 0;
-    trace_t *current_trace = NULL;
-    info_t *current_info = NULL;
-    for (size_t i = xor_list_size(__info_list); i > 0; i--) {
-        current_info = xor_list_pop_back(__info_list);
-        for (size_t t = xor_list_size(current_info->trace_list); t > 0; t--) {
-            current_trace = xor_list_pop_back(current_info->trace_list);
-            bytes_counter += current_trace->size;
-            free(current_trace);
-        }
-        bytes_allocated += bytes_counter;
-        if (false == current_info->allocated) {
-            bytes_freed += bytes_counter;
-        }
-        bytes_counter = 0;
-        xor_list_delete(current_info->trace_list);
-        free(current_info);
-    }
-    xor_list_delete(__info_list);
-    xor_list_delete(__chunk_list);
-    fputs("[WATCHDOG] INFO: Watchdog terminated\n", __stream);
-    fprintf(__stream, "[WATCHDOG] %-5s %zu allocations, %zu frees\n", "", __allocations_counter, __frees_counter);
-    fprintf(__stream, "[WATCHDOG] %-5s %zu bytes allocated, %zu bytes freed\n", "", bytes_allocated, bytes_freed);
-}
-
-/*
  * Protected functions definitions
  */
 void _watchdog_dump(char *_file, size_t _line) {
+    __watchdog_initialize();
     size_t bytes_allocated = 0, bytes_freed = 0, bytes_counter = 0;
     trace_t *current_trace = NULL;
     info_t *current_info = NULL;
@@ -136,6 +104,7 @@ void _watchdog_dump(char *_file, size_t _line) {
 }
 
 void _watchdog_collect(char *_file, size_t _line) {
+    __watchdog_initialize();
     size_t bytes_collected = 0;
     trace_t *current_trace = NULL;
     info_t *current_info = NULL;
@@ -148,7 +117,7 @@ void _watchdog_collect(char *_file, size_t _line) {
             fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %s:%04zu | %2zu bytes currently allocated\n", "",
                     __watchdog_func2string(current_trace->func), current_trace->file, current_trace->line, current_trace->size);
-            __watchdog_free(current_info->address, "<garbage collector>", 0);
+            __watchdog_free(current_info->address, _file, _line);
             bytes_collected += current_trace->size;
         }
     }
@@ -156,6 +125,7 @@ void _watchdog_collect(char *_file, size_t _line) {
 }
 
 void *_watchdog_malloc(size_t size, char *_file, size_t _line) {
+    __watchdog_initialize();
     void *data = __watchdog_allocate(size, false, _file, _line);
     if (data) {
         fprintf(__stream, "[WATCHDOG] INFO: malloc  at %s:%04zu\n", _file, _line);
@@ -168,6 +138,7 @@ void *_watchdog_malloc(size_t size, char *_file, size_t _line) {
 }
 
 void *_watchdog_calloc(size_t num, size_t size, char *_file, size_t _line) {
+    __watchdog_initialize();
     const size_t actual_size = num * size;
     void *data = __watchdog_allocate(actual_size, true, _file, _line);
     if (data) {
@@ -181,6 +152,7 @@ void *_watchdog_calloc(size_t num, size_t size, char *_file, size_t _line) {
 }
 
 void *_watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line) {
+    __watchdog_initialize();
     void *data = __watchdog_reallocate(ptr, size, _file, _line);
     if (data) {
         fprintf(__stream, "[WATCHDOG] INFO: realloc at %s:%04zu\n", _file, _line);
@@ -193,18 +165,21 @@ void *_watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line) {
 }
 
 void _watchdog_free(void *ptr, char *_file, size_t _line) {
+    __watchdog_initialize();
     const size_t bytes_freed = __watchdog_free(ptr, _file, _line);
     fprintf(__stream, "[WATCHDOG] INFO: free    at %s:%04zu\n", _file, _line);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes freed from address %p\n", "", bytes_freed, ptr);
 }
 
 void _watchdog_exit(int status, char *_file, size_t _line) {
+    __watchdog_initialize();
     fprintf(__stream, "[WATCHDOG] INFO: exit    at %s:%04zu\n", _file, _line);
     fprintf(__stream, "[WATCHDOG] %-5s exit code: %d\n", "", status);
     exit(status);
 }
 
 void _watchdog_abort(char *_file, size_t _line) {
+    __watchdog_initialize();
     fprintf(__stream, "[WATCHDOG] WARN: abort   at %s:%04zu\n", _file, _line);
     abort();
 }
@@ -212,6 +187,49 @@ void _watchdog_abort(char *_file, size_t _line) {
 /*
  * Internal functions definitions
  */
+void __watchdog_initialize() {
+    if (__initialized) {
+        return;
+    }
+    __info_list = xor_list_new();
+    __chunk_list = xor_list_new();
+    __stream = stderr;
+    fputs("[WATCHDOG] INFO: Watchdog initialized\n", __stream);
+    atexit(__watchdog_terminate);
+    __initialized = true;
+}
+
+void __watchdog_terminate(void) {
+    assert(__initialized);
+    size_t bytes_allocated = 0, bytes_freed = 0, bytes_counter = 0;
+    trace_t *current_trace = NULL;
+    info_t *current_info = NULL;
+    for (size_t i = xor_list_size(__info_list); i > 0; i--) {
+        current_info = xor_list_pop_back(__info_list);
+        for (size_t t = xor_list_size(current_info->trace_list); t > 0; t--) {
+            current_trace = xor_list_pop_back(current_info->trace_list);
+            bytes_counter += current_trace->size;
+            free(current_trace);
+        }
+        bytes_allocated += bytes_counter;
+        if (false == current_info->allocated) {
+            bytes_freed += bytes_counter;
+        }
+        bytes_counter = 0;
+        xor_list_delete(current_info->trace_list);
+        free(current_info);
+    }
+    xor_list_delete(__info_list);
+    xor_list_delete(__chunk_list);
+    fputs("[WATCHDOG] INFO: Watchdog terminated\n", __stream);
+    fprintf(__stream, "[WATCHDOG] %-5s %zu allocations, %zu frees\n", "", __allocations_counter, __frees_counter);
+    fprintf(__stream, "[WATCHDOG] %-5s %zu bytes allocated, %zu bytes freed\n", "", bytes_allocated, bytes_freed);
+    __stream = NULL;
+    __initialized = false;
+    __info_list = __chunk_list = NULL;
+    __allocations_counter = __frees_counter = 0;
+}
+
 static char *__watchdog_func2string(func_t func) {
     switch (func) {
         case FUNC_MALLOC:

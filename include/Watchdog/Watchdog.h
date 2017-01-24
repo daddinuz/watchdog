@@ -12,20 +12,10 @@
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
 
-/*
- * Public functions
- */
-extern void watchdog_initialize(FILE *stream);
-extern void watchdog_terminate(void);
-
-/*
- * Protected functions / use macros instead
- */
 extern void _watchdog_dump(char *_file, size_t _line);
 #define watchdog_dump()             _watchdog_dump(__FILE__, __LINE__)
 
-/* WARN: It's highly recommended to call this function only before program exits */
-extern void _watchdog_collect(char *_file, size_t _line);
+extern void _watchdog_collect(char *_file, size_t _line); /* It's recommended to call this function only on program exit */
 #define watchdog_collect()          _watchdog_collect(__FILE__, __LINE__)
 
 extern void *_watchdog_malloc(size_t size, char *_file, size_t _line);

@@ -10,21 +10,12 @@
  * WARNING: always include Watchdog.h after stdlib.h
  */
 #include <stdlib.h>
+#ifndef NDEBUG
 #include "Watchdog/Watchdog.h"
-
-
-/*
- * Print a memory summary, perform a garbage collection and terminate Watchdog.
- */
-void terminate(void);
+#endif
 
 
 int main(void) {
-    watchdog_initialize(stdout);    /* Initialize Watchdog and set stdout as output stream. */
-    atexit(terminate);              /* Register a cleanup function to be called before exit. */
-
-    watchdog_dump();
-
     /* no free, this will leak */
     double *number = malloc(sizeof(double));
 
@@ -34,11 +25,7 @@ int main(void) {
     str = realloc(str, 12);
     free(str);
 
-    return EXIT_SUCCESS;            /* Will call terminate() */
-}
-
-void terminate(void) {
-    watchdog_dump();
     watchdog_collect();
-    watchdog_terminate();
+    watchdog_dump();
+    return EXIT_SUCCESS;
 }
