@@ -100,7 +100,6 @@ void watchdog_terminate(void) {
     fputs("[WATCHDOG] INFO: Watchdog terminated\n", __stream);
     fprintf(__stream, "[WATCHDOG] %-5s %zu allocations, %zu frees\n", "", __allocations_counter, __frees_counter);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes allocated, %zu bytes freed\n", "", bytes_allocated, bytes_freed);
-    fclose(__stream);
 }
 
 /*
