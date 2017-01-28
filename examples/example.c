@@ -24,5 +24,6 @@ int main(void) {
     str = realloc(str, 12);
     free(str);
 
-    return EXIT_SUCCESS;
+    /* exit will appear on call logs */
+    exit(EXIT_SUCCESS);
 }
