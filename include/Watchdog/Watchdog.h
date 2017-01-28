@@ -6,17 +6,10 @@
  *  email:  daddinuz@gmail.com
  */
 
-#include <stdio.h>
 #include <stddef.h>
 
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
-
-extern void _watchdog_dump(char *_file, size_t _line);
-#define watchdog_dump()             _watchdog_dump(__FILE__, __LINE__)
-
-extern void _watchdog_collect(char *_file, size_t _line); /* It's recommended to call this function only on program exit */
-#define watchdog_collect()          _watchdog_collect(__FILE__, __LINE__)
 
 extern void *_watchdog_malloc(size_t size, char *_file, size_t _line);
 #define malloc(size)                _watchdog_malloc(size, __FILE__, __LINE__)

@@ -18,14 +18,11 @@
 int main(void) {
     /* no free, this will leak */
     double *number = malloc(sizeof(double));
-
-    watchdog_dump();
+    /* free(number); */
 
     char *str = calloc(10, sizeof(char));
     str = realloc(str, 12);
     free(str);
 
-    watchdog_collect();
-    watchdog_dump();
     return EXIT_SUCCESS;
 }
