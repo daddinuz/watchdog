@@ -12,46 +12,39 @@ This is the memory report of the example program under the `examples/` folder:
   
 ```bash
 $ ./bin/example
-[WATCHDOG] INFO: Watchdog initialized
-[WATCHDOG] INFO: summary at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0026
-[WATCHDOG]       0 allocations, 0 frees
-[WATCHDOG]       0 bytes allocated, 0 bytes freed
-[WATCHDOG] INFO: malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0029
-[WATCHDOG]       8 bytes allocated to address 0x1e81468
-[WATCHDOG] INFO: summary at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0031
-[WATCHDOG]          address 0x1e81468:
-[WATCHDOG]                  malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0029 |  8 bytes currently allocated
-[WATCHDOG]       1 allocations, 0 frees
-[WATCHDOG]       8 bytes allocated, 0 bytes freed
-[WATCHDOG] INFO: calloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0033
-[WATCHDOG]       10 bytes allocated to address 0x1e81558
-[WATCHDOG] INFO: realloc at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0034
-[WATCHDOG]       12 bytes reallocated from address 0x1e81558 to address 0x1e81558
-[WATCHDOG] INFO: free    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0035
-[WATCHDOG]       12 bytes freed from address 0x1e81558
-[WATCHDOG] INFO: summary at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0041
-[WATCHDOG]          address 0x1e81468:
-[WATCHDOG]                  malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0029 |  8 bytes currently allocated
-[WATCHDOG]          address 0x1e81558:
-[WATCHDOG]                  calloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0033 | 10 bytes were in use
-[WATCHDOG]                  realloc at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0034 | 12 bytes were in use
-[WATCHDOG]                  free    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0035 |  0 bytes currently allocated
-[WATCHDOG]       2 allocations, 1 frees
-[WATCHDOG]       30 bytes allocated, 22 bytes freed
-[WATCHDOG] WARN: collect at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0042
-[WATCHDOG]          address 0x1e81468:
-[WATCHDOG]                  malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0029 |  8 bytes currently allocated
+[WATCHDOG] INFO: Watchdog Initialized
+[WATCHDOG] INFO: malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020
+[WATCHDOG]       8 bytes allocated to address 0x9c4038
+[WATCHDOG] INFO: calloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0023
+[WATCHDOG]       10 bytes allocated to address 0x9c4108
+[WATCHDOG] INFO: realloc at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0024
+[WATCHDOG]       12 bytes reallocated from address 0x9c4108 to address 0x9c4108
+[WATCHDOG] INFO: free    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0025
+[WATCHDOG]       12 bytes freed from address 0x9c4108
+[WATCHDOG] WARN: exit    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0028
+[WATCHDOG]       exit code: 0
+[WATCHDOG] WARN: Garbage Collector
+[WATCHDOG]          address 0x9c4038:
+[WATCHDOG]                  malloc  at  /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020 |  8 bytes still allocated
 [WATCHDOG]       8 bytes collected
-[WATCHDOG] INFO: Watchdog terminated
+[WATCHDOG] INFO: Report
+[WATCHDOG]          address 0x9c4038:
+[WATCHDOG]                  malloc  at  /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020 |  8 bytes were in use
+[WATCHDOG]                  free    at                                     <garbage collector>:0000 |  0 bytes currently allocated
+[WATCHDOG]          address 0x9c4108:
+[WATCHDOG]                  calloc  at  /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0023 | 10 bytes were in use
+[WATCHDOG]                  realloc at  /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0024 | 12 bytes were in use
+[WATCHDOG]                  free    at  /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0025 |  0 bytes currently allocated
 [WATCHDOG]       2 allocations, 2 frees
-[WATCHDOG]       30 bytes allocated, 30 bytes freed
+[WATCHDOG]       30 bytes allocated, 30 bytes freed (whereof 8 bytes collected on exit)
+[WATCHDOG] INFO: Watchdog Terminated
 ```
 
 ### Integrate with your code
 
-Watchdog is designed to be really simple to import into your existing code.
-Basically you just have to include "Watchdog.h" after "stdlib.h" and initialize the library in your main.
-I strongly recommend to use Watchdog only in pre-production stages, so basically a real life integration would look like this:
+Watchdog is designed to be really simple to integrate into your existing code.
+Basically you just have to include "Watchdog.h" after "stdlib.h".
+I strongly recommend to use Watchdog only in pre-production stages, so a basic real life integration would look like this:
 
 ```C
 /**
@@ -63,10 +56,6 @@ I strongly recommend to use Watchdog only in pre-production stages, so basically
 #endif
 
 int main(int argc, char *argv[]) {
-#ifndef NDEBUG
-    watchdog_initialize(stdout);    /* remember to initialize Watchdog as first thing */ 
-    atexit(watchdog_terminate);     /* register a cleanup function that terminates Watchdog on exit */
-#endif
 
     /*
         Your Code
