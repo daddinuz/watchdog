@@ -5,7 +5,7 @@ set(CMAKE_C_FLAGS "-std=c99 -Werror -Wall -Wextra -Wpedantic -Wuninitialized -Wm
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
-add_subdirectory(deps/Colt)
+add_subdirectory(deps/Chain)
 include_directories(include/)
 
 #####
@@ -17,8 +17,8 @@ set(SOURCE_PATH "${PROJECT_PATH}/src")
 file(GLOB SOURCE_FILES "${SOURCE_PATH}/*.c")
 
 add_library(watchdog "${SOURCE_FILES}")
-target_include_directories(watchdog PRIVATE deps/Colt/include)
-target_link_libraries(watchdog PRIVATE colt-xor-list)
+target_include_directories(watchdog PRIVATE deps/Chain/include)
+target_link_libraries(watchdog PRIVATE chain)
 
 #####
 # Examples

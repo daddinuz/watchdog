@@ -27,7 +27,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-#include "colt/xor_list.h"
+#include "Chain/Chain.h"
 
 
 /*
@@ -55,7 +55,7 @@ typedef struct trace_t {
 } trace_t;
 
 typedef struct info_t {
-    XorList_t *trace_list;
+    Chain_t *trace_list;
     void *address;
     bool allocated;
 } info_t;
@@ -69,7 +69,7 @@ typedef struct chunk_t {
  */
 static FILE *__stream = NULL;
 static bool __initialized = false;
-static XorList_t *__info_list = NULL; /* TODO use iterators (when Colt will implement them) */
+static Chain_t *__info_list = NULL;
 static size_t __allocations_counter = 0, __frees_counter = 0;
 static size_t __bytes_allocated = 0, __bytes_freed = 0, __bytes_collected = 0;
 
@@ -144,7 +144,7 @@ static void __watchdog_initialize(void) {
         fprintf(stderr, "Watchdog: '%s' %s\n", WATCHDOG_OUTPUT, strerror(errno));
         abort();
     }
-    __info_list = xor_list_new();
+    __info_list = chain_new();
     atexit(__watchdog_terminate);
     atexit(__watchdog_report);
     atexit(__watchdog_collect);
@@ -154,18 +154,16 @@ static void __watchdog_initialize(void) {
 
 static void __watchdog_terminate(void) {
     assert(__initialized);
-    info_t *current_info = NULL;
-    trace_t *current_trace = NULL;
-    for (size_t i = xor_list_size(__info_list); i > 0; i--) {
-        current_info = xor_list_pop_back(__info_list);
-        for (size_t x = xor_list_size(current_info->trace_list); x > 0; x--) {
-            current_trace = xor_list_pop_back(current_info->trace_list);
+    for (info_t *current_info = NULL; chain_pop(__info_list, (void **) &current_info);) {
+        assert(NULL != current_info);
+        for (trace_t *current_trace = NULL; chain_pop(current_info->trace_list, (void **) &current_trace);) {
+            assert(NULL != current_trace);
             free(current_trace);
         }
-        xor_list_delete(current_info->trace_list);
+        chain_delete(current_info->trace_list);
         free(current_info);
     }
-    xor_list_delete(__info_list);
+    chain_delete(__info_list);
     fprintf(__stream, "[WATCHDOG] INFO: Watchdog Terminated\n");
     if ((stdout != __stream) && (stderr != __stream)) {
         fclose(__stream);
@@ -175,29 +173,24 @@ static void __watchdog_terminate(void) {
 static void __watchdog_report(void) {
     assert(__initialized);
 #if WATCHDOG_REPORT != 0
-    info_t *current_info = NULL;
-    trace_t *current_trace = NULL;
     fprintf(__stream, "[WATCHDOG] INFO: Report\n");
-    const size_t outer_size = xor_list_size(__info_list);
-    for (size_t i = 0; i < outer_size; i++) {
-        current_info = xor_list_get(__info_list, i);
+    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_FRONT);
+    for (info_t *current_info = NULL; chain_iterator_right(info_iterator, (void **) &current_info);) {
+        assert(NULL != current_info);
         fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
-        const size_t inner_size = xor_list_size(current_info->trace_list);
-        for (size_t x = 0; x < inner_size - 1; x++) {
-            current_trace = xor_list_get(current_info->trace_list, x);
+        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_FRONT);
+        for (trace_t *current_trace = NULL; chain_iterator_right(trace_iterator, (void **) &current_trace);) {
+            assert(NULL != current_trace);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes were in use\n", "",
                     __watchdog_call_to_string(current_trace->func), current_trace->file, current_trace->line,
                     current_trace->size);
         }
-        current_trace = xor_list_back(current_info->trace_list);
-        fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes currently allocated\n", "",
-                __watchdog_call_to_string(current_trace->func), current_trace->file, current_trace->line,
-                current_trace->size);
+        chain_iterator_delete(trace_iterator);
     }
+    chain_iterator_delete(info_iterator);
     fprintf(__stream, "[WATCHDOG] %-5s %zu allocations, %zu frees\n", "", __allocations_counter, __frees_counter);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes allocated, %zu bytes freed (whereof %zu bytes collected on exit)\n",
-            "",
-            __bytes_allocated, __bytes_freed, __bytes_collected);
+            "", __bytes_allocated, __bytes_freed, __bytes_collected);
 #else
     UNUSED(__bytes_collected);
 #endif
@@ -206,13 +199,13 @@ static void __watchdog_report(void) {
 static void __watchdog_collect(void) {
     assert(__initialized);
 #if WATCHDOG_GC != 0
-    info_t *current_info = NULL;
-    trace_t *current_trace = NULL;
     fprintf(__stream, "[WATCHDOG] WARN: Garbage Collector\n");
-    const size_t info_list_size = xor_list_size(__info_list);
-    for (size_t i = 0; i < info_list_size; i++) {
-        current_info = xor_list_get(__info_list, i);
-        current_trace = ((trace_t *) xor_list_back(current_info->trace_list));
+    trace_t *current_trace = NULL;
+    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_FRONT);
+    for (info_t *current_info = NULL; chain_iterator_right(iterator, (void **) &current_info);) {
+        assert(NULL != current_info);
+        chain_back(current_info->trace_list, (void **) &current_trace);
+        assert(NULL != current_trace);
         if (current_info->allocated) {
             fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes still allocated\n", "",
@@ -222,6 +215,7 @@ static void __watchdog_collect(void) {
             __bytes_collected += current_trace->size;
         }
     }
+    chain_iterator_delete(iterator);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes collected\n", "", __bytes_collected);
 #else
     UNUSED(__bytes_collected);
@@ -285,8 +279,8 @@ static void __watchdog_log_call(const call_t call, const char *const file, const
             const void *const data = va_arg(args, void *);
             if (data) {
                 fprintf(__stream, "[WATCHDOG] INFO: %-7s at %s:%04zu\n", caller, file, line);
-                fprintf(__stream, "[WATCHDOG] %-5s %zu bytes reallocated from address %p to address %p\n", "", size,
-                        ptr, data);
+                fprintf(__stream, "[WATCHDOG] %-5s %zu bytes reallocated from address %p to address %p\n", "",
+                        size, ptr, data);
             } else {
                 fprintf(__stream, "[WATCHDOG] ERROR: %-7s at %s:%04zu\n", caller, file, line);
                 fprintf(__stream, "[WATCHDOG] %-5s failed to reallocate %zu bytes\n", "", size);
@@ -329,7 +323,7 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
     }
     info_t *info = malloc(sizeof(info_t));
     assert(NULL != info);
-    info->trace_list = xor_list_new();
+    info->trace_list = chain_new();
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
@@ -338,8 +332,8 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
-    xor_list_push_back(info->trace_list, trace);
-    xor_list_push_back(__info_list, info);
+    chain_push(info->trace_list, trace);
+    chain_push(__info_list, info);
     chunk->info = info;
     __bytes_allocated += size;
     __allocations_counter += 1;
@@ -349,7 +343,10 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
 static void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file, const size_t line) {
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
-    const size_t old_size = ((trace_t *) xor_list_back(info->trace_list))->size;
+    trace_t *last_trace = NULL;
+    chain_back(info->trace_list, (void **) &last_trace);
+    assert(NULL != last_trace);
+    const size_t old_size = last_trace->size;
     if (NULL == (chunk = realloc(chunk, sizeof(chunk_t) + size))) {
         return NULL;
     }
@@ -362,7 +359,7 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
-    xor_list_push_back(info->trace_list, trace);
+    chain_push(info->trace_list, trace);
     __bytes_allocated += size;
     __bytes_freed += old_size;
     return chunk + 1;
@@ -371,7 +368,10 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
 static size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
-    const size_t bytes_freed = ((trace_t *) xor_list_back(info->trace_list))->size;
+    trace_t *last_trace = NULL;
+    chain_back(info->trace_list, (void **) &last_trace);
+    assert(NULL != last_trace);
+    const size_t bytes_freed = last_trace->size;
     trace_t *trace = malloc(sizeof(trace_t));
     assert(NULL != trace);
     trace->func = CALL_FREE;
@@ -379,7 +379,7 @@ static size_t __watchdog_free(void *ptr, const char *const file, const size_t li
     trace->line = line;
     trace->size = 0;
     info->allocated = false;
-    xor_list_push_back(info->trace_list, trace);
+    chain_push(info->trace_list, trace);
     free(chunk);
     __frees_counter += 1;
     __bytes_freed += bytes_freed;
