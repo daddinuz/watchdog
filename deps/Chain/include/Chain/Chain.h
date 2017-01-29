@@ -18,6 +18,7 @@ extern "C" {
 typedef struct Chain_t Chain_t;
 
 extern Chain_t *chain_new(void);
+extern void chain_clear(Chain_t *const self);
 extern void chain_delete_(Chain_t **ref);
 #define chain_delete(c) chain_delete_(&(c))
 
@@ -26,6 +27,8 @@ extern bool chain_pop(Chain_t *const self, void **out);
 
 extern bool chain_front(const Chain_t *const self, void **out);
 extern bool chain_back(const Chain_t *const self, void **out);
+
+extern bool chain_empty(const Chain_t *const self);
 
 typedef enum ChainBound_t {
     CHAIN_FRONT,
