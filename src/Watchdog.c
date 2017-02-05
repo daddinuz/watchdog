@@ -18,15 +18,15 @@
 #undef exit
 #undef abort
 
-/*
- * Re-include stdlib.h
- */
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+
+#define ALLIGATOR_WRAP_STDLIB
+#include "Alligator/Alligator.h"
 #include "Chain/Chain.h"
 
 
@@ -174,12 +174,12 @@ static void __watchdog_report(void) {
     assert(__initialized);
 #if WATCHDOG_REPORT != 0
     fprintf(__stream, "[WATCHDOG] INFO: Report\n");
-    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_FRONT);
-    for (info_t *current_info = NULL; chain_iterator_right(info_iterator, (void **) &current_info);) {
+    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_START);
+    for (info_t *current_info = NULL; chain_iterator_next(info_iterator, (void **) &current_info);) {
         assert(NULL != current_info);
         fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
-        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_FRONT);
-        for (trace_t *current_trace = NULL; chain_iterator_right(trace_iterator, (void **) &current_trace);) {
+        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_START);
+        for (trace_t *current_trace = NULL; chain_iterator_next(trace_iterator, (void **) &current_trace);) {
             assert(NULL != current_trace);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes were in use\n", "",
                     __watchdog_call_to_string(current_trace->func), current_trace->file, current_trace->line,
@@ -201,8 +201,8 @@ static void __watchdog_collect(void) {
 #if WATCHDOG_GC != 0
     fprintf(__stream, "[WATCHDOG] WARN: Garbage Collector\n");
     trace_t *current_trace = NULL;
-    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_FRONT);
-    for (info_t *current_info = NULL; chain_iterator_right(iterator, (void **) &current_info);) {
+    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_START);
+    for (info_t *current_info = NULL; chain_iterator_next(iterator, (void **) &current_info);) {
         assert(NULL != current_info);
         chain_back(current_info->trace_list, (void **) &current_trace);
         assert(NULL != current_trace);
@@ -322,12 +322,10 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
         return NULL;
     }
     info_t *info = malloc(sizeof(info_t));
-    assert(NULL != info);
     info->trace_list = chain_new();
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
-    assert(NULL != trace);
     trace->func = clear ? CALL_CALLOC : CALL_MALLOC;
     trace->file = (char *) file;
     trace->line = line;
@@ -354,7 +352,6 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
-    assert(NULL != trace);
     trace->func = CALL_REALLOC;
     trace->file = (char *) file;
     trace->line = line;
@@ -373,7 +370,6 @@ static size_t __watchdog_free(void *ptr, const char *const file, const size_t li
     assert(NULL != last_trace);
     const size_t bytes_freed = last_trace->size;
     trace_t *trace = malloc(sizeof(trace_t));
-    assert(NULL != trace);
     trace->func = CALL_FREE;
     trace->file = (char *) file;
     trace->line = line;

@@ -11,6 +11,8 @@
 #ifndef __CHAIN_H__
 #define __CHAIN_H__
 
+#define CHAIN_VERSION "0.1.2"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,8 +33,8 @@ extern bool chain_back(const Chain_t *const self, void **out);
 extern bool chain_empty(const Chain_t *const self);
 
 typedef enum ChainBound_t {
-    CHAIN_FRONT,
-    CHAIN_BACK
+    CHAIN_START,
+    CHAIN_END
 } ChainBound_t;
 
 typedef struct ChainIterator_t ChainIterator_t;
@@ -42,8 +44,8 @@ extern void chain_iterator_reset(ChainIterator_t *self, ChainBound_t bound);
 extern void chain_iterator_delete_(ChainIterator_t **ref);
 #define chain_iterator_delete(i) chain_iterator_delete_(&(i))
 
-extern bool chain_iterator_right(ChainIterator_t *const self, void **out);
-extern bool chain_iterator_left(ChainIterator_t *const self, void **out);
+extern bool chain_iterator_next(ChainIterator_t *const self, void **out);
+extern bool chain_iterator_prev(ChainIterator_t *const self, void **out);
 
 #ifdef __cplusplus
 }

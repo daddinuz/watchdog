@@ -6,10 +6,12 @@
  *  email:  daddinuz@gmail.com
  */
 
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
+
+#define ALLIGATOR_WRAP_STDLIB
+#include "Alligator/Alligator.h"
 #include "Chain/Chain.h"
 
 
@@ -41,18 +43,14 @@ struct Chain_t {
  */
 Chain_t *chain_new(void) {
     Chain_t *chain = calloc(1, sizeof(Chain_t));
-    assert(NULL != chain);
     return chain;
 }
 
 void chain_clear(Chain_t *const self) {
     assert(NULL != self);
     while (NULL != self->back) {
-        assert(NULL != self->front);
         chain_pop(self, NULL);
     }
-    assert(NULL == self->back);
-    assert(NULL == self->front);
 }
 
 void chain_delete_(Chain_t **ref) {
@@ -67,10 +65,8 @@ void chain_push(Chain_t *const self, void *const data) {
     assert(NULL != self);
     Node_t *new_node = __node_new(data);
     if (NULL == self->back) {
-        assert(NULL == self->front);
         self->front = self->back = new_node;
     } else {
-        assert(NULL != self->front);
         new_node->link = self->back;
         self->back->link = __node_xor(self->back->link, new_node);
         self->back = new_node;
@@ -80,10 +76,8 @@ void chain_push(Chain_t *const self, void *const data) {
 bool chain_pop(Chain_t *const self, void **out) {
     assert(NULL != self);
     if (NULL == self->back) {
-        assert(NULL == self->front);
         return false;
     }
-    assert(NULL != self->front);
     Node_t *left = __node_xor(self->back->link, NULL), *node = self->back, *right = NULL;
     if (left == NULL) {
         self->front = right;
@@ -99,10 +93,8 @@ bool chain_front(const Chain_t *const self, void **out) {
     assert(NULL != self);
     assert(NULL != out);
     if (NULL == self->front) {
-        assert(NULL == self->back);
         return false;
     }
-    assert(NULL != self->back);
     *out = self->front->data;
     return true;
 }
@@ -111,10 +103,8 @@ bool chain_back(const Chain_t *const self, void **out) {
     assert(NULL != self);
     assert(NULL != out);
     if (NULL == self->back) {
-        assert(NULL == self->front);
         return false;
     }
-    assert(NULL != self->front);
     *out = self->back->data;
     return true;
 }
@@ -122,10 +112,8 @@ bool chain_back(const Chain_t *const self, void **out) {
 bool chain_empty(const Chain_t *const self) {
     assert(NULL != self);
     if (NULL == self->back) {
-        assert(NULL == self->front);
         return false;
     }
-    assert(NULL != self->front);
     return true;
 }
 
@@ -144,9 +132,8 @@ ChainIterator_t *chain_iterator_new(Chain_t **ref, ChainBound_t bound) {
     assert(NULL != ref);
     assert(NULL != *ref);
     ChainIterator_t *iterator = calloc(1, sizeof(ChainIterator_t));
-    assert(NULL != iterator);
     iterator->chain = ref;
-    if (CHAIN_FRONT == bound) {
+    if (CHAIN_START == bound) {
         iterator->left = NULL;
         iterator->node = (*ref)->front;
         iterator->right = __node_xor(iterator->node->link, iterator->left);
@@ -162,7 +149,7 @@ void chain_iterator_reset(ChainIterator_t *self, ChainBound_t bound) {
     assert(NULL != self);
     assert(NULL != self->chain);
     assert(NULL != *self->chain);
-    if (CHAIN_FRONT == bound) {
+    if (CHAIN_START == bound) {
         self->left = NULL;
         self->node = (*self->chain)->front;
         self->right = __node_xor(self->node->link, self->left);
@@ -180,7 +167,7 @@ void chain_iterator_delete_(ChainIterator_t **ref) {
     *ref = NULL;
 }
 
-bool chain_iterator_right(ChainIterator_t *const self, void **out) {
+bool chain_iterator_next(ChainIterator_t *const self, void **out) {
     assert(NULL != self);
     if (NULL != *self->chain && NULL != self->node) {
         if (NULL != out) {
@@ -194,7 +181,7 @@ bool chain_iterator_right(ChainIterator_t *const self, void **out) {
     return false;
 }
 
-bool chain_iterator_left(ChainIterator_t *const self, void **out) {
+bool chain_iterator_prev(ChainIterator_t *const self, void **out) {
     assert(NULL != self);
     if (NULL != *self->chain && NULL != self->node) {
         if (NULL != out) {
@@ -213,7 +200,6 @@ bool chain_iterator_left(ChainIterator_t *const self, void **out) {
  */
 static Node_t *__node_new(void *data) {
     Node_t *node = calloc(1, sizeof(Node_t));
-    assert(node);
     node->data = data;
     return node;
 }

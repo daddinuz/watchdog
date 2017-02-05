@@ -11,6 +11,12 @@
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
 
+#define WATCHDOG_VERSION "0.1.0"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef WATCHDOG_GC         /* Garbage collection on exit (0: off, every non-zero: on) */
 #define WATCHDOG_GC         1
 #endif
@@ -48,5 +54,9 @@ extern void _watchdog_exit(int status, char *_file, size_t _line);
 
 extern void _watchdog_abort(char *_file, size_t _line);
 #define abort()                 _watchdog_abort(__FILE__, __LINE__)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /** __WATCHDOG_H__ **/

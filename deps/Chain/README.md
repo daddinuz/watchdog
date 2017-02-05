@@ -1,3 +1,3 @@
 # Chain
 
-Inspired by Colt Stack and XorList but lighter weight and without dependencies.
+Light weight container between a Stack and a XorList.

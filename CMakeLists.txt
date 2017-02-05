@@ -5,26 +5,32 @@ set(CMAKE_C_FLAGS "-std=c99 -Werror -Wall -Wextra -Wpedantic -Wuninitialized -Wm
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
-add_subdirectory(deps/Chain)
-include_directories(include/)
+include_directories(include)
+
+#####
+# Dependencies
+###
+set(DEPENDENCY_PATH "${PROJECT_SOURCE_DIR}/deps")
+set(ALLIGATOR_PATH "${DEPENDENCY_PATH}/Alligator")
+add_subdirectory("${ALLIGATOR_PATH}")
+set(CHAIN_PATH "${DEPENDENCY_PATH}/Chain")
+add_subdirectory("${CHAIN_PATH}")
+include_directories("${ALLIGATOR_PATH}/include" "${CHAIN_PATH}/include")
 
 #####
 # Archive
 ###
-set(PROJECT_PATH "${PROJECT_SOURCE_DIR}")
-set(INCLUDE_PATH "${PROJECT_PATH}/include/Watchdog")
-set(SOURCE_PATH "${PROJECT_PATH}/src")
+set(HEADER_PATH "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}")
+set(SOURCE_PATH "${PROJECT_SOURCE_DIR}/src")
+file(GLOB HEADER_FILES "${HEADER_PATH}/*.h")
 file(GLOB SOURCE_FILES "${SOURCE_PATH}/*.c")
-
-add_library(watchdog "${SOURCE_FILES}")
-target_include_directories(watchdog PRIVATE deps/Chain/include)
-target_link_libraries(watchdog PRIVATE chain)
+add_library(${PROJECT_NAME} "${HEADER_FILES}" "${SOURCE_FILES}")
+target_link_libraries(${PROJECT_NAME} PRIVATE Alligator Chain)
 
 #####
 # Examples
 ###
-set(EXAMPLE_PATH "${PROJECT_PATH}/examples")
-
+set(EXAMPLE_PATH "${PROJECT_SOURCE_DIR}/examples")
 add_executable(example "${EXAMPLE_PATH}/example.c")
+target_link_libraries(example PRIVATE ${PROJECT_NAME})
 target_compile_options(example PRIVATE -Wno-unused-variable)
-target_link_libraries(example watchdog)
