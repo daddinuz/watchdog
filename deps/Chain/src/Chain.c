@@ -6,7 +6,6 @@
  *  email:  daddinuz@gmail.com
  */
 
-#include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
 
@@ -23,7 +22,7 @@ typedef struct Node_t {
     struct Node_t *link;
 } Node_t;
 
-/*
+/**
  * Node private functions declaration
  */
 static Node_t *__node_new(void *data);
@@ -38,7 +37,7 @@ struct Chain_t {
     Node_t *back;
 };
 
-/*
+/**
  * Chain public functions definition
  */
 Chain_t *chain_new(void) {
@@ -125,7 +124,7 @@ struct ChainIterator_t {
     Node_t *left, *node, *right;
 };
 
-/*
+/**
  * Chain Iterator public functions definition
  */
 ChainIterator_t *chain_iterator_new(Chain_t **ref, ChainBound_t bound) {
@@ -133,7 +132,7 @@ ChainIterator_t *chain_iterator_new(Chain_t **ref, ChainBound_t bound) {
     assert(NULL != *ref);
     ChainIterator_t *iterator = calloc(1, sizeof(ChainIterator_t));
     iterator->chain = ref;
-    if (CHAIN_START == bound) {
+    if (CHAIN_BEGIN == bound) {
         iterator->left = NULL;
         iterator->node = (*ref)->front;
         iterator->right = __node_xor(iterator->node->link, iterator->left);
@@ -145,11 +144,11 @@ ChainIterator_t *chain_iterator_new(Chain_t **ref, ChainBound_t bound) {
     return iterator;
 }
 
-void chain_iterator_reset(ChainIterator_t *self, ChainBound_t bound) {
+void chain_iterator_rewind(ChainIterator_t *self, ChainBound_t bound) {
     assert(NULL != self);
     assert(NULL != self->chain);
     assert(NULL != *self->chain);
-    if (CHAIN_START == bound) {
+    if (CHAIN_BEGIN == bound) {
         self->left = NULL;
         self->node = (*self->chain)->front;
         self->right = __node_xor(self->node->link, self->left);
@@ -198,17 +197,17 @@ bool chain_iterator_prev(ChainIterator_t *const self, void **out) {
 /**
  * Node private functions definition
  */
-static Node_t *__node_new(void *data) {
+Node_t *__node_new(void *data) {
     Node_t *node = calloc(1, sizeof(Node_t));
     node->data = data;
     return node;
 }
 
-static Node_t *__node_xor(const Node_t *const p1, const Node_t *const p2) {
+Node_t *__node_xor(const Node_t *const p1, const Node_t *const p2) {
     return ((Node_t *) ((intptr_t) p1 ^ (intptr_t) p2));
 }
 
-static void __node_delete(Node_t **ref, void **out) {
+void __node_delete(Node_t **ref, void **out) {
     assert(NULL != ref);
     assert(NULL != *ref);
     if (out) {

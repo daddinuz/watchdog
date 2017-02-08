@@ -174,11 +174,11 @@ static void __watchdog_report(void) {
     assert(__initialized);
 #if WATCHDOG_REPORT != 0
     fprintf(__stream, "[WATCHDOG] INFO: Report\n");
-    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_START);
+    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_BEGIN);
     for (info_t *current_info = NULL; chain_iterator_next(info_iterator, (void **) &current_info);) {
         assert(NULL != current_info);
         fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
-        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_START);
+        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_BEGIN);
         for (trace_t *current_trace = NULL; chain_iterator_next(trace_iterator, (void **) &current_trace);) {
             assert(NULL != current_trace);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes were in use\n", "",
@@ -201,7 +201,7 @@ static void __watchdog_collect(void) {
 #if WATCHDOG_GC != 0
     fprintf(__stream, "[WATCHDOG] WARN: Garbage Collector\n");
     trace_t *current_trace = NULL;
-    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_START);
+    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_BEGIN);
     for (info_t *current_info = NULL; chain_iterator_next(iterator, (void **) &current_info);) {
         assert(NULL != current_info);
         chain_back(current_info->trace_list, (void **) &current_trace);
