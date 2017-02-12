@@ -6,12 +6,13 @@
  *  email:  daddinuz@gmail.com
  */
 
+#include <stddef.h>
 #include <stdbool.h>
 
 #ifndef __CHAIN_H__
 #define __CHAIN_H__
 
-#define CHAIN_VERSION "0.1.3"
+#define CHAIN_VERSION "0.1.6"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,17 +21,19 @@ extern "C" {
 typedef struct Chain_t Chain_t;
 
 extern Chain_t *chain_new(void);
+
 extern void chain_clear(Chain_t *const self);
 extern void chain_delete_(Chain_t **ref);
-#define chain_delete(c) chain_delete_(&(c))
+#define chain_delete(x) chain_delete_(&(x))
 
 extern void chain_push(Chain_t *const self, void *const data);
-extern bool chain_pop(Chain_t *const self, void **out);
+extern void *chain_pop(Chain_t *const self);
 
-extern bool chain_front(const Chain_t *const self, void **out);
-extern bool chain_back(const Chain_t *const self, void **out);
+extern void *chain_front(const Chain_t *const self);
+extern void *chain_back(const Chain_t *const self);
 
 extern bool chain_empty(const Chain_t *const self);
+extern size_t chain_size(const Chain_t *const self);
 
 typedef enum ChainBound_t {
     CHAIN_BEGIN,
@@ -41,6 +44,7 @@ typedef struct ChainIterator_t ChainIterator_t;
 
 extern ChainIterator_t *chain_iterator_new(Chain_t **ref, ChainBound_t bound);
 extern void chain_iterator_rewind(ChainIterator_t *self, ChainBound_t bound);
+
 extern void chain_iterator_delete_(ChainIterator_t **ref);
 #define chain_iterator_delete(i) chain_iterator_delete_(&(i))
 

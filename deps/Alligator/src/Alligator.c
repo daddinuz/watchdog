@@ -11,15 +11,16 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include "Alligator/Alligator.h"
+#include "Alligator.h"
 
-/*
+
+/**
  * Private functions declaration
  */
 static void __die(const char *msg, const char *file, const size_t line);
 static void __ensure(const bool assertion, const char *msg, const char *file, const size_t line);
 
-/*
+/**
  * Protected functions definitions
  */
 void *alligator_malloc_(size_t size, const char *__file, const size_t __line) {
@@ -49,7 +50,7 @@ void alligator_free_(void *ptr, const char *__file, const size_t __line) {
     free(ptr);
 }
 
-/*
+/**
  * Private functions definition
  */
 static void __die(const char *msg, const char *file, const size_t line) {

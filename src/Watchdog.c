@@ -6,7 +6,7 @@
  *  email:  daddinuz@gmail.com
  */
 
-#include "Watchdog/Watchdog.h"
+#include "Watchdog.h"
 
 /*
  * Un-define overrides over stdlib.h
@@ -24,10 +24,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #define ALLIGATOR_WRAP_STDLIB
-#include "Alligator/Alligator.h"
-#include "Chain/Chain.h"
+
+#include "Alligator.h"
+#include "Chain.h"
 
 
 /*
@@ -154,10 +156,12 @@ static void __watchdog_initialize(void) {
 
 static void __watchdog_terminate(void) {
     assert(__initialized);
-    for (info_t *current_info = NULL; chain_pop(__info_list, (void **) &current_info);) {
-        assert(NULL != current_info);
-        for (trace_t *current_trace = NULL; chain_pop(current_info->trace_list, (void **) &current_trace);) {
-            assert(NULL != current_trace);
+    info_t *current_info = NULL;
+    trace_t *current_trace = NULL;
+    while (!chain_empty(__info_list)) {
+        current_info = chain_pop(__info_list);
+        while (!chain_empty(current_info->trace_list)) {
+            current_trace = chain_pop(current_info->trace_list);
             free(current_trace);
         }
         chain_delete(current_info->trace_list);
@@ -203,9 +207,7 @@ static void __watchdog_collect(void) {
     trace_t *current_trace = NULL;
     ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_BEGIN);
     for (info_t *current_info = NULL; chain_iterator_next(iterator, (void **) &current_info);) {
-        assert(NULL != current_info);
-        chain_back(current_info->trace_list, (void **) &current_trace);
-        assert(NULL != current_trace);
+        current_trace = chain_back(current_info->trace_list);
         if (current_info->allocated) {
             fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes still allocated\n", "",
@@ -342,8 +344,7 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
-    chain_back(info->trace_list, (void **) &last_trace);
-    assert(NULL != last_trace);
+    last_trace = chain_back(info->trace_list);
     const size_t old_size = last_trace->size;
     if (NULL == (chunk = realloc(chunk, sizeof(chunk_t) + size))) {
         return NULL;
@@ -366,8 +367,7 @@ static size_t __watchdog_free(void *ptr, const char *const file, const size_t li
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
-    chain_back(info->trace_list, (void **) &last_trace);
-    assert(NULL != last_trace);
+    last_trace = chain_back(info->trace_list);
     const size_t bytes_freed = last_trace->size;
     trace_t *trace = malloc(sizeof(trace_t));
     trace->func = CALL_FREE;

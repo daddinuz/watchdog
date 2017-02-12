@@ -11,10 +11,13 @@
  */
 #include <stdlib.h>
 #ifndef NDEBUG
-#include "Watchdog/Watchdog.h"
+#include "Watchdog.h"
 #endif
 
 
+/*
+ *
+ */
 int main(void) {
     /* no free, this will leak */
     double *number = malloc(sizeof(double));

@@ -5,17 +5,20 @@ set(CMAKE_C_FLAGS "-std=c99 -Werror -Wall -Wextra -Wpedantic -Wuninitialized -Wm
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-include_directories(include)
+include_directories(include/${PROJECT_NAME})
 
 #####
 # Dependencies
 ###
 set(DEPENDENCY_PATH ${PROJECT_SOURCE_DIR}/deps)
+
 set(ALLIGATOR_PATH ${DEPENDENCY_PATH}/Alligator)
 add_subdirectory(${ALLIGATOR_PATH})
+include_directories(${ALLIGATOR_PATH}/include/Alligator)
+
 set(CHAIN_PATH ${DEPENDENCY_PATH}/Chain)
 add_subdirectory(${CHAIN_PATH})
-include_directories(${ALLIGATOR_PATH}/include ${CHAIN_PATH}/include)
+include_directories(${CHAIN_PATH}/include/Chain)
 
 #####
 # Archive
