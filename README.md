@@ -1,7 +1,7 @@
 Watchdog
 =========
 
-Watchdog is a C99-compliant memory tracer library useful to find memory leaks or analyze memory usage.  
+Watchdog is a C99-compliant runtime memory tracer library useful to find memory leaks or analyze memory usage.  
 Basically Watchdog creates a layer over the C stdlib.h routines used to manage memory such as 'malloc'/'free' in order 
 to maintain the whole "history" of your dynamic allocated variables with a small overhead over performances and memory.  
 This feature may come in handy in development stage, during a memory leak hunting session, while analyzing the memory 
@@ -40,7 +40,7 @@ $ ./bin/example
 [WATCHDOG] INFO: Watchdog Terminated
 ```
 
-### Integrate with your code
+### Integrate into your code
 
 Watchdog is designed to be really simple to integrate into your existing code.  
 Basically you just have to include "Watchdog.h" after "stdlib.h".  
@@ -51,14 +51,16 @@ I strongly recommend to use Watchdog only in pre-production stages, so a basic r
  * Always include <Watchdog.h> after <stdlib.h>
  */
 #include <stdlib.h>
+
 #ifndef NDEBUG
-#include <Watchdog/Watchdog.h>
+#define WATCHDOG_WRAP_STDLIB
+#include "Watchdog.h"
 #endif
 
 int main(int argc, char *argv[]) {
 
     /*
-        Your Code
+        Your unchanged code
      */
 
     return 0;

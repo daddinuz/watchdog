@@ -11,7 +11,7 @@
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
 
-#define WATCHDOG_VERSION "0.1.0"
+#define WATCHDOG_VERSION "0.1.1"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,22 +38,27 @@ extern "C" {
 #endif
 
 extern void *_watchdog_malloc(size_t size, char *_file, size_t _line);
-#define malloc(size)            _watchdog_malloc(size, __FILE__, __LINE__)
-
 extern void *_watchdog_calloc(size_t num, size_t size, char *_file, size_t _line);
-#define calloc(num, size)       _watchdog_calloc(num, size, __FILE__, __LINE__)
-
 extern void *_watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line);
-#define realloc(ptr, size)      _watchdog_realloc(ptr, size, __FILE__, __LINE__)
-
 extern void _watchdog_free(void *ptr, char *_file, size_t _line);
-#define free(ptr)               _watchdog_free(ptr, __FILE__, __LINE__)
-
 extern void _watchdog_exit(int status, char *_file, size_t _line);
-#define exit(status)            _watchdog_exit(status, __FILE__, __LINE__)
-
 extern void _watchdog_abort(char *_file, size_t _line);
-#define abort()                 _watchdog_abort(__FILE__, __LINE__)
+
+#define watchdog_malloc(size)       _watchdog_malloc(size, __FILE__, __LINE__)
+#define watchdog_calloc(num, size)  _watchdog_calloc(num, size, __FILE__, __LINE__)
+#define watchdog_realloc(ptr, size) _watchdog_realloc(ptr, size, __FILE__, __LINE__)
+#define watchdog_free(ptr)          _watchdog_free(ptr, __FILE__, __LINE__)
+#define watchdog_exit(status)       _watchdog_exit(status, __FILE__, __LINE__)
+#define watchdog_abort()            _watchdog_abort(__FILE__, __LINE__)
+
+#ifdef WATCHDOG_WRAP_STDLIB
+#define malloc(size)                watchdog_malloc(size)
+#define calloc(num, size)           watchdog_calloc(num, size)
+#define realloc(ptr, size)          watchdog_realloc(ptr, size)
+#define free(ptr)                   watchdog_free(ptr)
+#define exit(status)                watchdog_exit(status)
+#define abort()                     watchdog_abort()
+#endif
 
 #ifdef __cplusplus
 }

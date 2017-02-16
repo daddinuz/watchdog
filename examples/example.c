@@ -10,7 +10,9 @@
  * WARNING: always include Watchdog.h after stdlib.h
  */
 #include <stdlib.h>
+
 #ifndef NDEBUG
+#define WATCHDOG_WRAP_STDLIB
 #include "Watchdog.h"
 #endif
 
