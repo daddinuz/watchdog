@@ -35,7 +35,7 @@
 /*
  * Macro definitions
  */
-#define UNUSED(x)  (void) x  /* quite compiler warnings where not needed*/
+#define UNUSED(x)  (void) x  /* quite compiler warnings where not needed */
 
 /*
  * Internal structures definition
@@ -91,50 +91,50 @@ static size_t __watchdog_free(void *ptr, const char *const file, const size_t li
 /*
  * Protected functions definitions
  */
-void *_watchdog_malloc(size_t size, char *_file, size_t _line) {
+void *watchdog_malloc_(size_t size, const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    void *data = __watchdog_allocate(size, false, _file, _line);
-    __watchdog_log_call(CALL_MALLOC, _file, _line, size, data);
+    void *data = __watchdog_allocate(size, false, __file, __line);
+    __watchdog_log_call(CALL_MALLOC, __file, __line, size, data);
     return data;
 }
 
-void *_watchdog_calloc(size_t num, size_t size, char *_file, size_t _line) {
+void *watchdog_calloc_(size_t nmemb, size_t size, const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    const size_t actual_size = num * size;
-    void *data = __watchdog_allocate(actual_size, true, _file, _line);
-    __watchdog_log_call(CALL_CALLOC, _file, _line, actual_size, data);
+    const size_t actual_size = nmemb * size;
+    void *data = __watchdog_allocate(actual_size, true, __file, __line);
+    __watchdog_log_call(CALL_CALLOC, __file, __line, actual_size, data);
     return data;
 }
 
-void *_watchdog_realloc(void *ptr, size_t size, char *_file, size_t _line) {
+void *watchdog_realloc_(void *ptr, size_t size, const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    void *data = __watchdog_reallocate(ptr, size, _file, _line);
-    __watchdog_log_call(CALL_REALLOC, _file, _line, size, ptr, data);
+    void *data = __watchdog_reallocate(ptr, size, __file, __line);
+    __watchdog_log_call(CALL_REALLOC, __file, __line, size, ptr, data);
     return data;
 }
 
-void _watchdog_free(void *ptr, char *_file, size_t _line) {
+void watchdog_free_(void *ptr, const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    const size_t bytes_freed = __watchdog_free(ptr, _file, _line);
-    __watchdog_log_call(CALL_FREE, _file, _line, bytes_freed, ptr);
+    const size_t bytes_freed = __watchdog_free(ptr, __file, __line);
+    __watchdog_log_call(CALL_FREE, __file, __line, bytes_freed, ptr);
 }
 
-void _watchdog_exit(int status, char *_file, size_t _line) {
+void watchdog_exit_(int status, const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    __watchdog_log_call(CALL_EXIT, _file, _line, status);
+    __watchdog_log_call(CALL_EXIT, __file, __line, status);
     exit(status);
 }
 
-void _watchdog_abort(char *_file, size_t _line) {
+void watchdog_abort_(const char *const __file, const size_t __line) {
     __watchdog_initialize();
-    __watchdog_log_call(CALL_ABORT, _file, _line);
+    __watchdog_log_call(CALL_ABORT, __file, __line);
     abort();
 }
 
 /*
  * Internal functions definitions
  */
-static void __watchdog_initialize(void) {
+void __watchdog_initialize(void) {
     if (__initialized) {
         return;
     }
@@ -154,7 +154,7 @@ static void __watchdog_initialize(void) {
     fprintf(__stream, "[WATCHDOG] INFO: Watchdog Initialized\n");
 }
 
-static void __watchdog_terminate(void) {
+void __watchdog_terminate(void) {
     assert(__initialized);
     info_t *current_info = NULL;
     trace_t *current_trace = NULL;
@@ -174,7 +174,7 @@ static void __watchdog_terminate(void) {
     }
 }
 
-static void __watchdog_report(void) {
+void __watchdog_report(void) {
     assert(__initialized);
 #if WATCHDOG_REPORT != 0
     fprintf(__stream, "[WATCHDOG] INFO: Report\n");
@@ -200,7 +200,7 @@ static void __watchdog_report(void) {
 #endif
 }
 
-static void __watchdog_collect(void) {
+void __watchdog_collect(void) {
     assert(__initialized);
 #if WATCHDOG_GC != 0
     fprintf(__stream, "[WATCHDOG] WARN: Garbage Collector\n");
@@ -224,7 +224,7 @@ static void __watchdog_collect(void) {
 #endif
 }
 
-static char *__watchdog_call_to_string(const call_t call) {
+char *__watchdog_call_to_string(const call_t call) {
     switch (call) {
         case CALL_MALLOC:
             return "malloc";
@@ -240,11 +240,10 @@ static char *__watchdog_call_to_string(const call_t call) {
             return "abort";
         default:
             abort();
-            return "";
     }
 }
 
-static void __watchdog_log_call(const call_t call, const char *const file, const size_t line, ...) {
+void __watchdog_log_call(const call_t call, const char *const file, const size_t line, ...) {
     assert(__initialized);
 #if WATCHDOG_VERBOSE != 0
     va_list args;
@@ -308,7 +307,6 @@ static void __watchdog_log_call(const call_t call, const char *const file, const
             break;
         default:
             abort();
-            break;
     }
     va_end(args);
 #else
@@ -318,7 +316,7 @@ static void __watchdog_log_call(const call_t call, const char *const file, const
 #endif
 }
 
-static void *__watchdog_allocate(const size_t size, const bool clear, const char *const file, const size_t line) {
+void *__watchdog_allocate(const size_t size, const bool clear, const char *const file, const size_t line) {
     chunk_t *chunk = clear ? calloc(1, sizeof(chunk_t) + size) : malloc(sizeof(chunk_t) + size);
     if (NULL == chunk) {
         return NULL;
@@ -340,7 +338,7 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
     return chunk + 1;
 }
 
-static void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file, const size_t line) {
+void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file, const size_t line) {
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
@@ -363,7 +361,7 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
     return chunk + 1;
 }
 
-static size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
+size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
