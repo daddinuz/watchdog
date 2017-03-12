@@ -11,16 +11,16 @@
 #ifndef __ALLIGATOR_H__
 #define __ALLIGATOR_H__
 
-#define ALLIGATOR_VERSION "0.1.2"
+#define ALLIGATOR_VERSION "0.1.3"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void *alligator_malloc_(size_t size, const char *__file, const size_t __line);
-extern void *alligator_calloc_(size_t nmemb, size_t size, const char *__file, const size_t __line);
-extern void *alligator_realloc_(void *ptr, size_t size, const char *__file, const size_t __line);
-extern void alligator_free_(void *ptr, const char *__file, const size_t __line);
+extern void *alligator_malloc_(size_t size, const char *const __file, const size_t __line);
+extern void *alligator_calloc_(size_t nmemb, size_t size, const char *const __file, const size_t __line);
+extern void *alligator_realloc_(void *ptr, size_t size, const char *const __file, const size_t __line);
+extern void alligator_free_(void *ptr, const char *const __file, const size_t __line);
 
 #define alligator_malloc(size)          alligator_malloc_((size), __FILE__, __LINE__)
 #define alligator_calloc(nmemb, size)   alligator_calloc_((nmemb), (size), __FILE__, __LINE__)

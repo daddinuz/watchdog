@@ -17,49 +17,44 @@
 /**
  * Private functions declaration
  */
-static void __die(const char *msg, const char *file, const size_t line);
-static void __ensure(const bool assertion, const char *msg, const char *file, const size_t line);
+static void __ensure(const bool assertion, const char *const message, const char *const file, const size_t line);
 
 /**
  * Protected functions definitions
  */
-void *alligator_malloc_(size_t size, const char *__file, const size_t __line) {
+void *alligator_malloc_(size_t size, const char *const __file, const size_t __line) {
     void *chunk = malloc(size);
     __ensure(NULL != chunk, strerror(errno), __file, __line);
     return chunk;
 }
 
-void *alligator_calloc_(size_t nmemb, size_t size, const char *__file, const size_t __line) {
+void *alligator_calloc_(size_t nmemb, size_t size, const char *const __file, const size_t __line) {
     void *chunk = calloc(nmemb, size);
     __ensure(NULL != chunk, strerror(errno), __file, __line);
     return chunk;
 }
 
-void *alligator_realloc_(void *ptr, size_t size, const char *__file, const size_t __line) {
+void *alligator_realloc_(void *ptr, size_t size, const char *const __file, const size_t __line) {
     void *chunk = realloc(ptr, size);
     __ensure(NULL != chunk, strerror(errno), __file, __line);
     return chunk;
 }
 
-void alligator_free_(void *ptr, const char *__file, const size_t __line) {
+void alligator_free_(void *ptr, const char *const __file, const size_t __line) {
     /*
-     * All standards compliant versions of the C library treat free(NULL) as a no-op,
-     * but we want to be sure that NULL is never passed to free.
+     * All standards compliant versions of the C library treat free(NULL) as a no-op
      */
-    __ensure(NULL != ptr, "Freeing a NULL pointer", __file, __line);
+    (void) __file;
+    (void) __line;
     free(ptr);
 }
 
 /**
  * Private functions definition
  */
-static void __die(const char *msg, const char *file, const size_t line) {
-    fprintf(stderr, "At: %s:%lu\nError: %s\n", file, (long unsigned) line, msg);
-    abort();
-}
-
-static void __ensure(const bool assertion, const char *msg, const char *file, const size_t line) {
+void __ensure(const bool assertion, const char *const message, const char *const file, const size_t line) {
     if (!assertion) {
-        __die(msg, file, line);
+        fprintf(stderr, "At: %s:%lu\nError: %s\n", file, (long unsigned) line, message);
+        abort();
     }
 }

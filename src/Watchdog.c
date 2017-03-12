@@ -260,8 +260,8 @@ void __watchdog_log_call(const call_t call, const char *const file, const size_t
                 fprintf(__stream, "[WATCHDOG] ERROR: %-7s at %s:%04zu\n", caller, file, line);
                 fprintf(__stream, "[WATCHDOG] %-5s failed to allocate %zu bytes\n", "", size);
             }
-        }
             break;
+        }
         case CALL_CALLOC: {
             const size_t size = va_arg(args, size_t);
             const void *const data = va_arg(args, void *);
@@ -272,8 +272,8 @@ void __watchdog_log_call(const call_t call, const char *const file, const size_t
                 fprintf(__stream, "[WATCHDOG] ERROR: %-7s at %s:%04zu\n", caller, file, line);
                 fprintf(__stream, "[WATCHDOG] %-5s failed to allocate %zu bytes\n", "", size);
             }
-        }
             break;
+        }
         case CALL_REALLOC: {
             const size_t size = va_arg(args, size_t);
             const void *const ptr = va_arg(args, void *);
@@ -286,25 +286,25 @@ void __watchdog_log_call(const call_t call, const char *const file, const size_t
                 fprintf(__stream, "[WATCHDOG] ERROR: %-7s at %s:%04zu\n", caller, file, line);
                 fprintf(__stream, "[WATCHDOG] %-5s failed to reallocate %zu bytes\n", "", size);
             }
-        }
             break;
+        }
         case CALL_FREE: {
             const size_t size = va_arg(args, size_t);
             const void *const data = va_arg(args, void *);
             fprintf(__stream, "[WATCHDOG] INFO: %-7s at %s:%04zu\n", caller, file, line);
             fprintf(__stream, "[WATCHDOG] %-5s %zu bytes freed from address %p\n", "", size, data);
-        }
             break;
+        }
         case CALL_EXIT: {
             const int exit_code = va_arg(args, int);
             fprintf(__stream, "[WATCHDOG] WARN: %-7s at %s:%04zu\n", caller, file, line);
             fprintf(__stream, "[WATCHDOG] %-5s exit code: %d\n", "", exit_code);
-        }
             break;
+        }
         case CALL_ABORT: {
             fprintf(__stream, "[WATCHDOG] WARN: %-7s at %s:%04zu\n", caller, file, line);
-        }
             break;
+        }
         default:
             abort();
     }
