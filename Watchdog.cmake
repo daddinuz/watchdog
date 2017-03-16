@@ -1,18 +1,17 @@
-cmake_minimum_required(VERSION 3.0)
-project(Watchdog)
+set(ARCHIVE_NAME Watchdog)
+set(ARCHIVE_PATH deps/${ARCHIVE_NAME})
 
 #####
 # Dependencies
 ###
-set(DEPENDENCY_PATH ../)
-include("${DEPENDENCY_PATH}/Alligator/Alligator.cmake")
-include("${DEPENDENCY_PATH}/Chain/Chain.cmake")
-include_directories(${DEPENDENCY_PATH})
+set(DEPENDENCIES "Alligator Chain")
 
 #####
 # Archive
 ###
-file(GLOB HEADER_FILES ./*.h)
-file(GLOB SOURCE_FILES ./*.c)
-add_library(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Alligator Chain)
+file(GLOB HEADER_FILES ${ARCHIVE_PATH}/*.h)
+file(GLOB SOURCE_FILES ${ARCHIVE_PATH}/*.c)
+add_library(${ARCHIVE_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+target_link_libraries(${ARCHIVE_NAME} PRIVATE ${DEPENDENCIES})
+
+message("${ARCHIVE_NAME}: ${HEADER_FILES} ${SOURCE_FILES} included")

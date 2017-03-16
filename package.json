@@ -19,6 +19,6 @@
   ],
   "dependencies": {
     "daddinuz/Alligator": "0.1.3",
-    "daddinuz/Chain": ""
+    "daddinuz/Chain": "0.1.6"
   }
 }
