@@ -53,7 +53,7 @@ typedef struct trace_t {
     char *file;
     size_t line;
     size_t size;
-    call_t func;
+    call_t call;
 } trace_t;
 
 typedef struct info_t {
@@ -186,7 +186,7 @@ void __watchdog_report(void) {
         for (trace_t *current_trace = NULL; chain_iterator_next(trace_iterator, (void **) &current_trace);) {
             assert(NULL != current_trace);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes were in use\n", "",
-                    __watchdog_call_to_string(current_trace->func), current_trace->file, current_trace->line,
+                    __watchdog_call_to_string(current_trace->call), current_trace->file, current_trace->line,
                     current_trace->size);
         }
         chain_iterator_delete(trace_iterator);
@@ -211,7 +211,7 @@ void __watchdog_collect(void) {
         if (current_info->allocated) {
             fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes still allocated\n", "",
-                    __watchdog_call_to_string(current_trace->func), current_trace->file, current_trace->line,
+                    __watchdog_call_to_string(current_trace->call), current_trace->file, current_trace->line,
                     current_trace->size);
             __watchdog_free(current_info->address, "<garbage collector>", 0);
             __bytes_collected += current_trace->size;
@@ -326,7 +326,7 @@ void *__watchdog_allocate(const size_t size, const bool clear, const char *const
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
-    trace->func = clear ? CALL_CALLOC : CALL_MALLOC;
+    trace->call = clear ? CALL_CALLOC : CALL_MALLOC;
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
@@ -351,7 +351,7 @@ void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
-    trace->func = CALL_REALLOC;
+    trace->call = CALL_REALLOC;
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
@@ -368,7 +368,7 @@ size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
     last_trace = chain_back(info->trace_list);
     const size_t bytes_freed = last_trace->size;
     trace_t *trace = malloc(sizeof(trace_t));
-    trace->func = CALL_FREE;
+    trace->call = CALL_FREE;
     trace->file = (char *) file;
     trace->line = line;
     trace->size = 0;
