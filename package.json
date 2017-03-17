@@ -18,7 +18,7 @@
     "src/Watchdog.c"
   ],
   "dependencies": {
-    "daddinuz/Alligator": "0.1.3",
+    "daddinuz/Alligator": "0.1.4",
     "daddinuz/Chain": "0.1.6"
   }
 }
