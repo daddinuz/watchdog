@@ -12,13 +12,11 @@ include_directories(include/${PROJECT_NAME})
 ###
 set(DEPENDENCY_PATH ${PROJECT_SOURCE_DIR}/deps)
 
-set(ALLIGATOR_PATH ${DEPENDENCY_PATH}/Alligator)
-add_subdirectory(${ALLIGATOR_PATH})
-include_directories(${ALLIGATOR_PATH}/include/Alligator)
+include_directories(${DEPENDENCY_PATH}/Alligator)
+include(${DEPENDENCY_PATH}/Alligator/Alligator.cmake)
 
-set(CHAIN_PATH ${DEPENDENCY_PATH}/Chain)
-add_subdirectory(${CHAIN_PATH})
-include_directories(${CHAIN_PATH}/include/Chain)
+include_directories(${DEPENDENCY_PATH}/Chain)
+include(${DEPENDENCY_PATH}/Chain/Chain.cmake)
 
 #####
 # Archive

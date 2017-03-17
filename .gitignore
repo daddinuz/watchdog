@@ -1,3 +1,6 @@
+# Dependencies
+deps/
+
 # Object files
 *.o
 *.ko
