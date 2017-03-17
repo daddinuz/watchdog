@@ -4,7 +4,7 @@ set(ARCHIVE_PATH deps/${ARCHIVE_NAME})
 #####
 # Dependencies
 ###
-set(DEPENDENCIES "Alligator Chain")
+set(DEPENDENCIES "Alligator" "Chain")
 
 #####
 # Archive
