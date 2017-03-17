@@ -11,7 +11,7 @@
 #ifndef __WATCHDOG_H__
 #define __WATCHDOG_H__
 
-#define WATCHDOG_VERSION "0.1.3"
+#define WATCHDOG_VERSION "0.1.4"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +52,12 @@ extern void watchdog_abort_(const char *const __file, const size_t __line);
 #define watchdog_abort()                watchdog_abort_(__FILE__, __LINE__)
 
 #ifdef WATCHDOG_WRAP_STDLIB
+#undef malloc
+#undef calloc
+#undef realloc
+#undef free
+#undef exit
+#undef abort
 #define malloc(size)                    watchdog_malloc(size)
 #define calloc(nmemb, size)             watchdog_calloc(nmemb, size)
 #define realloc(ptr, size)              watchdog_realloc(ptr, size)
