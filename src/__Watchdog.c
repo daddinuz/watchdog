@@ -18,26 +18,23 @@
 #undef exit
 #undef abort
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <assert.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <errno.h>
+#include <assert.h>
 
-#define ALLIGATOR_WRAP_STDLIB
-
-#include "Alligator.h"
-#include "Chain.h"
+#include "__Watchdog_Allocator.h"
+#include "__Watchdog_Chain.h"
 
 
-/*
+/**
  * Macro definitions
  */
 #define UNUSED(x)  (void) x  /* quite compiler warnings where not needed */
 
-/*
+/**
  * Internal structures definition
  */
 typedef enum call_t {
@@ -66,7 +63,7 @@ typedef struct chunk_t {
     info_t *info;
 } chunk_t;
 
-/*
+/**
  * Global variables
  */
 static FILE *__stream = NULL;
@@ -75,7 +72,7 @@ static Chain_t *__info_list = NULL;
 static size_t __allocations_counter = 0, __frees_counter = 0;
 static size_t __bytes_allocated = 0, __bytes_freed = 0, __bytes_collected = 0;
 
-/*
+/**
  * Internal functions declaration
  */
 static void __watchdog_initialize(void);
@@ -88,7 +85,7 @@ static void *__watchdog_allocate(const size_t size, const bool clear, const char
 static void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file, const size_t line);
 static size_t __watchdog_free(void *ptr, const char *const file, const size_t line);
 
-/*
+/**
  * Protected functions definitions
  */
 void *watchdog_malloc_(size_t size, const char *const __file, const size_t __line) {
@@ -131,7 +128,7 @@ void watchdog_abort_(const char *const __file, const size_t __line) {
     abort();
 }
 
-/*
+/**
  * Internal functions definitions
  */
 void __watchdog_initialize(void) {

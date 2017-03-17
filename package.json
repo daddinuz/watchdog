@@ -1,13 +1,13 @@
 {
   "name": "Watchdog",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "repo": "daddinuz/Watchdog",
   "description": "C99-compliant runtime memory tracer library useful to find memory leaks or analyze memory usage.",
   "keywords": [
     "leaks",
     "memory",
-    "memory-tracer",
     "memory-leaks",
+    "memory-tracer",
     "garbage-collector",
     "memory-leak-detection"
   ],
@@ -15,10 +15,9 @@
   "makefile": "Watchdog.cmake",
   "src": [
     "include/Watchdog/Watchdog.h",
-    "src/Watchdog.c"
-  ],
-  "dependencies": {
-    "daddinuz/Alligator": "0.1.4",
-    "daddinuz/Chain": "0.1.6"
-  }
+    "src/__Watchdog.c",
+    "src/__Watchdog_Chain.h",
+    "src/__Watchdog_Chain.c",
+    "src/__Watchdog_Allocator.h"
+  ]
 }

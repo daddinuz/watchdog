@@ -8,17 +8,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 include_directories(include/${PROJECT_NAME})
 
 #####
-# Dependencies
-###
-set(DEPENDENCY_PATH ${PROJECT_SOURCE_DIR}/deps)
-
-include_directories(${DEPENDENCY_PATH}/Alligator)
-include(${DEPENDENCY_PATH}/Alligator/Alligator.cmake)
-
-include_directories(${DEPENDENCY_PATH}/Chain)
-include(${DEPENDENCY_PATH}/Chain/Chain.cmake)
-
-#####
 # Archive
 ###
 set(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
@@ -26,7 +15,6 @@ set(SOURCE_PATH ${PROJECT_SOURCE_DIR}/src)
 file(GLOB HEADER_FILES ${HEADER_PATH}/*.h)
 file(GLOB SOURCE_FILES ${SOURCE_PATH}/*.c)
 add_library(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Alligator Chain)
 
 #####
 # Examples
