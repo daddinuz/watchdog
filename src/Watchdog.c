@@ -19,14 +19,13 @@
 #undef abort
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
-#include <assert.h>
-
-#include "__Watchdog_Allocator.h"
-#include "__Watchdog_Chain.h"
 
 
 /**
@@ -35,7 +34,77 @@
 #define UNUSED(x)  (void) x  /* quite compiler warnings where not needed */
 
 /**
- * Internal structures definition
+ * Node structure definitions
+ */
+typedef struct Node_t {
+    void *data;
+    struct Node_t *link;
+} Node_t;
+
+/**
+ * Node functions declarations
+ */
+static Node_t *__node_new(void *data);
+static Node_t *__node_xor(const Node_t *const p1, const Node_t *const p2);
+static void *__node_delete(Node_t **ref);
+
+/**
+ * Chain structure definitions
+ */
+typedef struct chain_t {
+    size_t size;
+    Node_t *front;
+    Node_t *back;
+} chain_t;
+
+/**
+ * Chain functions declarations
+ */
+static chain_t *__chain_new(void);
+
+static void __chain_clear(chain_t *const self);
+static void __chain_delete_(chain_t **ref);
+#define __chain_delete(x) __chain_delete_(&(x))
+
+static void __chain_push(chain_t *const self, void *const data);
+static void *__chain_pop(chain_t *const self);
+
+static void *__chain_front(const chain_t *const self);
+static void *__chain_back(const chain_t *const self);
+
+static bool __chain_empty(const chain_t *const self);
+static size_t __chain_size(const chain_t *const self);
+
+/**
+ * ChainBound enumeration definitions
+ */
+typedef enum chain_bound_t {
+    CHAIN_BEGIN,
+    CHAIN_END
+} chain_bound_t;
+
+/**
+ * ChainIterator structure definitions
+ */
+typedef struct chain_iterator_t {
+    chain_t **ref;
+    Node_t *left, *node, *right;
+} chain_iterator_t;
+
+/**
+ * ChainIterator functions definitions
+ */
+static chain_iterator_t *__chain_iterator_new(chain_t **ref, chain_bound_t bound);
+static void __chain_iterator_rewind(chain_iterator_t *self, chain_bound_t bound);
+
+static void __chain_iterator_delete_(chain_iterator_t **ref);
+#define __chain_iterator_delete(i) __chain_iterator_delete_(&(i))
+
+static bool __chain_iterator_next(chain_iterator_t *const self, void **out);
+static bool __chain_iterator_prev(chain_iterator_t *const self, void **out);
+
+/**
+ * Call structure definitions
  */
 typedef enum call_t {
     CALL_MALLOC,
@@ -46,6 +115,9 @@ typedef enum call_t {
     CALL_ABORT,
 } call_t;
 
+/**
+ * Trace structure definitions
+ */
 typedef struct trace_t {
     char *file;
     size_t line;
@@ -53,12 +125,18 @@ typedef struct trace_t {
     call_t call;
 } trace_t;
 
+/**
+ * Info structure definitions
+ */
 typedef struct info_t {
-    Chain_t *trace_list;
+    chain_t *trace_list;
     void *address;
     bool allocated;
 } info_t;
 
+/**
+ * Chunk structure definitions
+ */
 typedef struct chunk_t {
     info_t *info;
 } chunk_t;
@@ -68,12 +146,12 @@ typedef struct chunk_t {
  */
 static FILE *__stream = NULL;
 static bool __initialized = false;
-static Chain_t *__info_list = NULL;
+static chain_t *__info_list = NULL;
 static size_t __allocations_counter = 0, __frees_counter = 0;
 static size_t __bytes_allocated = 0, __bytes_freed = 0, __bytes_collected = 0;
 
 /**
- * Internal functions declaration
+ * Watchdog private functions declarations
  */
 static void __watchdog_initialize(void);
 static void __watchdog_terminate(void);
@@ -86,7 +164,7 @@ static void *__watchdog_reallocate(void *ptr, const size_t size, const char *con
 static size_t __watchdog_free(void *ptr, const char *const file, const size_t line);
 
 /**
- * Protected functions definitions
+ * Watchdog protected functions definitions
  */
 void *watchdog_malloc_(size_t size, const char *const __file, const size_t __line) {
     __watchdog_initialize();
@@ -129,7 +207,7 @@ void watchdog_abort_(const char *const __file, const size_t __line) {
 }
 
 /**
- * Internal functions definitions
+ * Watchdog private functions definitions
  */
 void __watchdog_initialize(void) {
     if (__initialized) {
@@ -143,7 +221,7 @@ void __watchdog_initialize(void) {
         fprintf(stderr, "Watchdog: '%s' %s\n", WATCHDOG_OUTPUT, strerror(errno));
         abort();
     }
-    __info_list = chain_new();
+    __info_list = __chain_new();
     atexit(__watchdog_terminate);
     atexit(__watchdog_report);
     atexit(__watchdog_collect);
@@ -155,16 +233,16 @@ void __watchdog_terminate(void) {
     assert(__initialized);
     info_t *current_info = NULL;
     trace_t *current_trace = NULL;
-    while (!chain_empty(__info_list)) {
-        current_info = chain_pop(__info_list);
-        while (!chain_empty(current_info->trace_list)) {
-            current_trace = chain_pop(current_info->trace_list);
+    while (!__chain_empty(__info_list)) {
+        current_info = __chain_pop(__info_list);
+        while (!__chain_empty(current_info->trace_list)) {
+            current_trace = __chain_pop(current_info->trace_list);
             free(current_trace);
         }
-        chain_delete(current_info->trace_list);
+        __chain_delete(current_info->trace_list);
         free(current_info);
     }
-    chain_delete(__info_list);
+    __chain_delete(__info_list);
     fprintf(__stream, "[WATCHDOG] INFO: Watchdog Terminated\n");
     if ((stdout != __stream) && (stderr != __stream)) {
         fclose(__stream);
@@ -175,20 +253,20 @@ void __watchdog_report(void) {
     assert(__initialized);
 #if WATCHDOG_REPORT != 0
     fprintf(__stream, "[WATCHDOG] INFO: Report\n");
-    ChainIterator_t *info_iterator = chain_iterator_new(&__info_list, CHAIN_BEGIN);
-    for (info_t *current_info = NULL; chain_iterator_next(info_iterator, (void **) &current_info);) {
+    chain_iterator_t *info_iterator = __chain_iterator_new(&__info_list, CHAIN_BEGIN);
+    for (info_t *current_info = NULL; __chain_iterator_next(info_iterator, (void **) &current_info);) {
         assert(NULL != current_info);
         fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
-        ChainIterator_t *trace_iterator = chain_iterator_new(&current_info->trace_list, CHAIN_BEGIN);
-        for (trace_t *current_trace = NULL; chain_iterator_next(trace_iterator, (void **) &current_trace);) {
+        chain_iterator_t *trace_iterator = __chain_iterator_new(&current_info->trace_list, CHAIN_BEGIN);
+        for (trace_t *current_trace = NULL; __chain_iterator_next(trace_iterator, (void **) &current_trace);) {
             assert(NULL != current_trace);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes were in use\n", "",
                     __watchdog_call_to_string(current_trace->call), current_trace->file, current_trace->line,
                     current_trace->size);
         }
-        chain_iterator_delete(trace_iterator);
+        __chain_iterator_delete(trace_iterator);
     }
-    chain_iterator_delete(info_iterator);
+    __chain_iterator_delete(info_iterator);
     fprintf(__stream, "[WATCHDOG] %-5s %zu allocations, %zu frees\n", "", __allocations_counter, __frees_counter);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes allocated, %zu bytes freed (whereof %zu bytes collected on exit)\n",
             "", __bytes_allocated, __bytes_freed, __bytes_collected);
@@ -202,9 +280,9 @@ void __watchdog_collect(void) {
 #if WATCHDOG_GC != 0
     fprintf(__stream, "[WATCHDOG] WARN: Garbage Collector\n");
     trace_t *current_trace = NULL;
-    ChainIterator_t *iterator = chain_iterator_new(&__info_list, CHAIN_BEGIN);
-    for (info_t *current_info = NULL; chain_iterator_next(iterator, (void **) &current_info);) {
-        current_trace = chain_back(current_info->trace_list);
+    chain_iterator_t *iterator = __chain_iterator_new(&__info_list, CHAIN_BEGIN);
+    for (info_t *current_info = NULL; __chain_iterator_next(iterator, (void **) &current_info);) {
+        current_trace = __chain_back(current_info->trace_list);
         if (current_info->allocated) {
             fprintf(__stream, "[WATCHDOG] %-8s address %p:\n", "", current_info->address);
             fprintf(__stream, "[WATCHDOG] %-16s %-7s at %65s:%04zu | %2zu bytes still allocated\n", "",
@@ -214,7 +292,7 @@ void __watchdog_collect(void) {
             __bytes_collected += current_trace->size;
         }
     }
-    chain_iterator_delete(iterator);
+    __chain_iterator_delete(iterator);
     fprintf(__stream, "[WATCHDOG] %-5s %zu bytes collected\n", "", __bytes_collected);
 #else
     UNUSED(__bytes_collected);
@@ -319,7 +397,7 @@ void *__watchdog_allocate(const size_t size, const bool clear, const char *const
         return NULL;
     }
     info_t *info = malloc(sizeof(info_t));
-    info->trace_list = chain_new();
+    info->trace_list = __chain_new();
     info->address = (chunk + 1);
     info->allocated = true;
     trace_t *trace = malloc(sizeof(trace_t));
@@ -327,8 +405,8 @@ void *__watchdog_allocate(const size_t size, const bool clear, const char *const
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
-    chain_push(info->trace_list, trace);
-    chain_push(__info_list, info);
+    __chain_push(info->trace_list, trace);
+    __chain_push(__info_list, info);
     chunk->info = info;
     __bytes_allocated += size;
     __allocations_counter += 1;
@@ -339,7 +417,7 @@ void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
-    last_trace = chain_back(info->trace_list);
+    last_trace = __chain_back(info->trace_list);
     const size_t old_size = last_trace->size;
     if (NULL == (chunk = realloc(chunk, sizeof(chunk_t) + size))) {
         return NULL;
@@ -352,7 +430,7 @@ void *__watchdog_reallocate(void *ptr, const size_t size, const char *const file
     trace->file = (char *) file;
     trace->line = line;
     trace->size = size;
-    chain_push(info->trace_list, trace);
+    __chain_push(info->trace_list, trace);
     __bytes_allocated += size;
     __bytes_freed += old_size;
     return chunk + 1;
@@ -362,7 +440,7 @@ size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
     chunk_t *chunk = (chunk_t *) ptr - 1;
     info_t *info = chunk->info;
     trace_t *last_trace = NULL;
-    last_trace = chain_back(info->trace_list);
+    last_trace = __chain_back(info->trace_list);
     const size_t bytes_freed = last_trace->size;
     trace_t *trace = malloc(sizeof(trace_t));
     trace->call = CALL_FREE;
@@ -370,9 +448,174 @@ size_t __watchdog_free(void *ptr, const char *const file, const size_t line) {
     trace->line = line;
     trace->size = 0;
     info->allocated = false;
-    chain_push(info->trace_list, trace);
+    __chain_push(info->trace_list, trace);
     free(chunk);
     __frees_counter += 1;
     __bytes_freed += bytes_freed;
     return bytes_freed;
+}
+
+/**
+ * Node functions definitions
+ */
+Node_t *__node_new(void *data) {
+    Node_t *node = calloc(1, sizeof(Node_t));
+    node->data = data;
+    return node;
+}
+
+Node_t *__node_xor(const Node_t *const p1, const Node_t *const p2) {
+    return ((Node_t *) ((intptr_t) p1 ^ (intptr_t) p2));
+}
+
+void *__node_delete(Node_t **ref) {
+    assert(NULL != ref);
+    assert(NULL != *ref);
+    void *const data = (*ref)->data;
+    free(*ref);
+    *ref = NULL;
+    return data;
+}
+
+/**
+ * Chain functions definitions
+ */
+chain_t *__chain_new(void) {
+    chain_t *chain = calloc(1, sizeof(chain_t));
+    return chain;
+}
+
+void __chain_clear(chain_t *const self) {
+    assert(NULL != self);
+    while (NULL != self->back) {
+        __chain_pop(self);
+    }
+    self->size = 0;
+}
+
+void __chain_delete_(chain_t **ref) {
+    assert(NULL != ref);
+    assert(NULL != *ref);
+    __chain_clear(*ref);
+    free(*ref);
+    *ref = NULL;
+}
+
+void __chain_push(chain_t *const self, void *const data) {
+    assert(NULL != self);
+    Node_t *new_node = __node_new(data);
+    if (NULL == self->back) {
+        self->front = self->back = new_node;
+    } else {
+        new_node->link = self->back;
+        self->back->link = __node_xor(self->back->link, new_node);
+        self->back = new_node;
+    }
+    self->size += 1;
+}
+
+void *__chain_pop(chain_t *const self) {
+    assert(NULL != self);
+    assert(NULL != self->back);
+    Node_t *left = __node_xor(self->back->link, NULL), *node = self->back, *right = NULL;
+    if (left == NULL) {
+        self->front = right;
+    } else {
+        left->link = __node_xor(__node_xor(left->link, node), right);
+    }
+    self->back = left;
+    self->size -= 1;
+    return __node_delete(&node);
+}
+
+void *__chain_front(const chain_t *const self) {
+    assert(NULL != self);
+    assert(NULL != self->front);
+    return self->front->data;
+}
+
+void *__chain_back(const chain_t *const self) {
+    assert(NULL != self);
+    assert(NULL != self->back);
+    return self->back->data;
+}
+
+bool __chain_empty(const chain_t *const self) {
+    assert(NULL != self);
+    return 0 == self->size;
+}
+
+size_t __chain_size(const chain_t *const self) {
+    assert(NULL != self);
+    return self->size;
+}
+
+/**
+ * ChainIterator functions definitions
+ */
+chain_iterator_t *__chain_iterator_new(chain_t **ref, chain_bound_t bound) {
+    assert(NULL != ref);
+    assert(NULL != *ref);
+    chain_iterator_t *iterator = calloc(1, sizeof(chain_iterator_t));
+    iterator->ref = ref;
+    if (CHAIN_BEGIN == bound) {
+        iterator->left = NULL;
+        iterator->node = (*ref)->front;
+        iterator->right = __node_xor(iterator->node->link, iterator->left);
+    } else {
+        iterator->right = NULL;
+        iterator->node = (*ref)->back;
+        iterator->left = __node_xor(iterator->node->link, iterator->right);
+    }
+    return iterator;
+}
+
+void __chain_iterator_rewind(chain_iterator_t *self, chain_bound_t bound) {
+    assert(NULL != self);
+    assert(NULL != self->ref);
+    assert(NULL != *self->ref);
+    if (CHAIN_BEGIN == bound) {
+        self->left = NULL;
+        self->node = (*self->ref)->front;
+        self->right = __node_xor(self->node->link, self->left);
+    } else {
+        self->right = NULL;
+        self->node = (*self->ref)->back;
+        self->left = __node_xor(self->node->link, self->right);
+    }
+}
+
+void __chain_iterator_delete_(chain_iterator_t **ref) {
+    assert(NULL != ref);
+    assert(NULL != *ref);
+    free(*ref);
+    *ref = NULL;
+}
+
+bool __chain_iterator_next(chain_iterator_t *const self, void **out) {
+    assert(NULL != self);
+    if (NULL != *self->ref && NULL != self->node) {
+        if (NULL != out) {
+            *out = self->node->data;
+        }
+        self->left = self->node;
+        self->node = self->right;
+        self->right = self->node ? __node_xor(self->node->link, self->left) : NULL;
+        return true;
+    }
+    return false;
+}
+
+bool __chain_iterator_prev(chain_iterator_t *const self, void **out) {
+    assert(NULL != self);
+    if (NULL != *self->ref && NULL != self->node) {
+        if (NULL != out) {
+            *out = self->node->data;
+        }
+        self->right = self->node;
+        self->node = self->left;
+        self->left = self->node ? __node_xor(self->node->link, self->right) : NULL;
+        return true;
+    }
+    return false;
 }
