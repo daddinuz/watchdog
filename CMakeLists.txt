@@ -1,25 +1,15 @@
-cmake_minimum_required(VERSION 3.0)
-project(Watchdog)
+cmake_minimum_required(VERSION 3.10)
+project(watchdog C)
 
-set(CMAKE_C_FLAGS "-std=c99 -Werror -Wall -Wextra -Wpedantic -Wuninitialized -Wmaybe-uninitialized -Wno-unused-function")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-include_directories(include/${PROJECT_NAME})
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 
-#####
-# Archive
-###
-set(HEADER_PATH ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
-set(SOURCE_PATH ${PROJECT_SOURCE_DIR}/src)
-file(GLOB HEADER_FILES ${HEADER_PATH}/*.h)
-file(GLOB SOURCE_FILES ${SOURCE_PATH}/*.c)
-add_library(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+include_directories(deps)
+include(deps/panic/panic.cmake)
 
-#####
-# Examples
-###
-set(EXAMPLE_PATH ${PROJECT_SOURCE_DIR}/examples)
-add_executable(example ${EXAMPLE_PATH}/example.c)
-target_link_libraries(example PRIVATE ${PROJECT_NAME})
-target_compile_options(example PRIVATE -Wno-unused-variable)
+add_library(watchdog sources/watchdog.h sources/watchdog.c)
+target_link_libraries(watchdog PRIVATE panic)
+
+add_executable(main examples/main.c)
+target_link_libraries(main PRIVATE watchdog)
+target_include_directories(main PRIVATE sources)

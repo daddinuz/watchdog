@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="watchdog"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\deps\;CMake Files\deps\panic\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="panic">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/libpanic.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 panic"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="panic/fast">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/libpanic.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 panic/fast"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="main">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/main" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/sources"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 main"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="main/fast">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/main" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/sources"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 main/fast"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="watchdog">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/libwatchdog.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 watchdog"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="watchdog/fast">
+				<Option output="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/libwatchdog.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/daddinuz/Workspace/C/Released/watchdog/deps"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 watchdog/fast"/>
+					<CompileFile command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j2 -f &quot;/home/daddinuz/Workspace/C/Released/watchdog/cmake-build-release/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/deps/panic/panic.c">
+			<Option target="panic"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/deps/panic/panic.h">
+			<Option target="panic"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/examples/main.c">
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/sources/watchdog.c">
+			<Option target="watchdog"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/sources/watchdog.h">
+			<Option target="watchdog"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/daddinuz/Workspace/C/Released/watchdog/deps/panic/panic.cmake">
+			<Option virtualFolder="CMake Files\deps\panic\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

@@ -8,59 +8,106 @@ This feature may come in handy in development stage, during a memory leak huntin
 bottle-neck of you program, or for smaller applications, it can help to focus on coding leaving the boiler plate of 
 memory de-allocation to the basic garbage collection utility that Watchdog provides. 
 
-This is the memory report of the example program under the `examples/` folder:
+Below there is a memory report of the example program under the `examples/` folder, 
+by now the only supported output format is YAML:
   
 ```bash
-$ ./bin/example
-[WATCHDOG] INFO: Watchdog Initialized
-[WATCHDOG] INFO: malloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020
-[WATCHDOG]       8 bytes allocated to address 0x73e038
-[WATCHDOG] INFO: calloc  at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0023
-[WATCHDOG]       10 bytes allocated to address 0x73e108
-[WATCHDOG] INFO: realloc at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0024
-[WATCHDOG]       12 bytes reallocated from address 0x73e108 to address 0x73e108
-[WATCHDOG] INFO: free    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0025
-[WATCHDOG]       12 bytes freed from address 0x73e108
-[WATCHDOG] WARN: exit    at /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0028
-[WATCHDOG]       exit code: 0
-[WATCHDOG] WARN: Garbage Collector
-[WATCHDOG]          address 0x73e038:
-[WATCHDOG]                  malloc  at            /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020 |  8 bytes still allocated
-[WATCHDOG]       8 bytes collected
-[WATCHDOG] INFO: Report
-[WATCHDOG]          address 0x73e038:
-[WATCHDOG]                  malloc  at            /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0020 |  8 bytes were in use
-[WATCHDOG]                  free    at                                               <garbage collector>:0000 |  0 bytes were in use
-[WATCHDOG]          address 0x73e108:
-[WATCHDOG]                  calloc  at            /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0023 | 10 bytes were in use
-[WATCHDOG]                  realloc at            /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0024 | 12 bytes were in use
-[WATCHDOG]                  free    at            /home/daddinuz/Workspace/C/Watchdog/examples/example.c:0025 |  0 bytes were in use
-[WATCHDOG]       2 allocations, 2 frees
-[WATCHDOG]       30 bytes allocated, 30 bytes freed (whereof 8 bytes collected on exit)
-[WATCHDOG] INFO: Watchdog Terminated
+$ ./cmake-build-debug/main
+"0x521ca90":
+  status: leaked
+  chunks:
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 30
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 28
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 26
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 24
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 22
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 20
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 18
+      call: realloc
+    - href: /watchdog/examples/main.c:42
+      file: /watchdog/examples/main.c
+      line: 42
+      size: 16
+      call: realloc
+    - href: /watchdog/examples/main.c:40
+      file: /watchdog/examples/main.c
+      line: 40
+      size: 5
+      call: realloc
+
+"0x521c260":
+  status: freed
+  chunks:
+    - href: /watchdog/examples/main.c:38
+      file: /watchdog/examples/main.c
+      line: 38
+      size: 0
+      call: free
+    - href: /watchdog/examples/main.c:37
+      file: /watchdog/examples/main.c
+      line: 37
+      size: 48
+      call: realloc
+    - href: /watchdog/examples/main.c:36
+      file: /watchdog/examples/main.c
+      line: 36
+      size: 10
+      call: calloc
+
+"0x521c060":
+  status: leaked
+  chunks:
+    - href: /watchdog/examples/main.c:33
+      file: /watchdog/examples/main.c
+      line: 33
+      size: 8
+      call: malloc
 ```
 
 ### Integrate into your code
 
 Watchdog is designed to be really simple to integrate into your existing code.  
-Basically you just have to include "Watchdog.h" after "stdlib.h".  
+Basically you just have to include "watchdog.h" instead of "stdlib.h", if NDEBUG is defined watchdog is automatically 
+disabled, so that programs will run with zero overhead using the standard C library in "stdlib.h". 
 I strongly recommend to use Watchdog only in pre-production stages, so a basic real life integration would look like this:
 
 ```C
 /**
- * Always include <Watchdog.h> after <stdlib.h>
+ * Watchog will include <stdlib.h> itself
  */
-#include <stdlib.h>
-
-#ifndef NDEBUG
-#define WATCHDOG_WRAP_STDLIB
-#include "Watchdog.h"
-#endif
+#include <watchdog.h>
 
 int main(int argc, char *argv[]) {
 
     /*
-        Your unchanged code
+        Your unchanged code with mallocs, callocs, reallocs and free
      */
 
     return 0;
