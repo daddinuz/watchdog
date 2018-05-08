@@ -9,7 +9,6 @@
     "memory",
     "memory-leaks",
     "memory-tracer",
-    "garbage-collector",
     "memory-leak-detection"
   ],
   "src": [
