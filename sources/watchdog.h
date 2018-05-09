@@ -41,13 +41,17 @@ extern "C" {
 
 #define WATCHDOG_VERSION_MAJOR       0
 #define WATCHDOG_VERSION_MINOR       2
-#define WATCHDOG_VERSION_PATCH       1
+#define WATCHDOG_VERSION_PATCH       2
 #define WATCHDOG_VERSION_SUFFIX      ""
 #define WATCHDOG_VERSION_IS_RELEASE  0
-#define WATCHDOG_VERSION_HEX         0x000201
+#define WATCHDOG_VERSION_HEX         0x000202
 
-#ifndef WATCHDOG_OUTPUT             /* Where to redirect output ("<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.yml") */
-#define WATCHDOG_OUTPUT             "<stderr>"
+#ifndef WATCHDOG_OUTPUT_STREAM      /* "<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.ext" */
+#define WATCHDOG_OUTPUT_STREAM      "<stderr>"
+#endif
+
+#ifndef WATCHDOG_OUTPUT_FORMAT      /* "<yaml>" | "<json>" */
+#define WATCHDOG_OUTPUT_FORMAT      "<yaml>"
 #endif
 
 /**
