@@ -6,8 +6,21 @@ specific module or even an entire application.
 Basically Watchdog creates a layer over the C stdlib.h routines used to manage memory such as 'malloc'/'free' in order 
 to maintain the whole "history" of your dynamic allocated variables with a small overhead over performances and memory.  
 This feature may come in handy in development stage, during a memory leak hunting session, while analyzing the memory 
-bottle-neck of you program, or for smaller applications, it can help to focus on coding leaving the boiler plate of 
-memory de-allocation to the basic garbage collection utility that Watchdog provides. 
+bottle-neck of you program.
+
+### Integrate into your code
+
+Watchdog is designed to be really simple to integrate into your existing code, basically you just have to include 
+"watchdog.h" instead of "stdlib.h", if NDEBUG is defined watchdog is automatically disabled, so that programs will run 
+with zero overhead using the standard C library allocators in "stdlib.h". 
+
+Is strongly recommend to use Watchdog only in pre-production stages.
+
+### Dump memory while running
+
+Watchdog will automatically register a signal handler used to dump the memory usage report while the application is running.  
+
+### Report 
 
 By now the only supported output formats are JSON and YAML,
 below there is a memory report of the example program under the `examples/` folder using YAML format:
@@ -91,11 +104,3 @@ $ ./cmake-build-debug/main
       size: 8
       call: malloc
 ```
-
-### Integrate into your code
-
-Watchdog is designed to be really simple to integrate into your existing code, basically you just have to include 
-"watchdog.h" instead of "stdlib.h", if NDEBUG is defined watchdog is automatically disabled, so that programs will run 
-with zero overhead using the standard C library allocators in "stdlib.h". 
-
-Is strongly recommend to use Watchdog only in pre-production stages.
