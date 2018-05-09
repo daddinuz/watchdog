@@ -460,16 +460,19 @@ struct Watchdog_Chunk *Watchdog_Visit_traverse(struct Watchdog_Chunk *start, Wat
 enum Watchdog_Visit Watchdog_Visit_reportAllAndCollectFreedChunks(const struct Watchdog_Chunk *const chunk) {
     assert(chunk);
     if (chunk->trace) {
-        return WATCHDOG_TRACE_CALL_FREE == chunk->trace->call ? WATCHDOG_VISIT_REPORT_AND_COLLECT
-                                                              : WATCHDOG_VISIT_REPORT;
+        return (WATCHDOG_TRACE_CALL_FREE == chunk->trace->call) ? WATCHDOG_VISIT_REPORT_AND_COLLECT
+                                                                : WATCHDOG_VISIT_REPORT;
     }
     return WATCHDOG_VISIT_COLLECT;
 }
 
 enum Watchdog_Visit Watchdog_Visit_reportAndCollectFreedChunks(const struct Watchdog_Chunk *const chunk) {
     assert(chunk);
-    return (!chunk->trace || WATCHDOG_TRACE_CALL_FREE == chunk->trace->call) ? WATCHDOG_VISIT_REPORT_AND_COLLECT
-                                                                             : WATCHDOG_VISIT_NO_OP;
+    if (chunk->trace) {
+        return (WATCHDOG_TRACE_CALL_FREE == chunk->trace->call) ? WATCHDOG_VISIT_REPORT_AND_COLLECT
+                                                                : WATCHDOG_VISIT_NO_OP;
+    }
+    return WATCHDOG_VISIT_COLLECT;
 }
 
 enum Watchdog_Visit Watchdog_Visit_collectAllChunks(const struct Watchdog_Chunk *const chunk) {

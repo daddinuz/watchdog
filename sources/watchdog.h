@@ -41,10 +41,10 @@ extern "C" {
 
 #define WATCHDOG_VERSION_MAJOR       0
 #define WATCHDOG_VERSION_MINOR       2
-#define WATCHDOG_VERSION_PATCH       0
+#define WATCHDOG_VERSION_PATCH       1
 #define WATCHDOG_VERSION_SUFFIX      ""
 #define WATCHDOG_VERSION_IS_RELEASE  0
-#define WATCHDOG_VERSION_HEX         0x000200
+#define WATCHDOG_VERSION_HEX         0x000201
 
 #ifndef WATCHDOG_OUTPUT             /* Where to redirect output ("<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.yml") */
 #define WATCHDOG_OUTPUT             "<stderr>"
