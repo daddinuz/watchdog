@@ -28,7 +28,7 @@ below there is a memory report of the example program under the `examples/` fold
 ```bash
 $ ./cmake-build-debug/main
 "0x521ca90":
-  status: leaked
+  status: in use
   chunks:
     - href: /watchdog/examples/main.c:42
       file: /watchdog/examples/main.c
@@ -77,7 +77,7 @@ $ ./cmake-build-debug/main
       call: realloc
 
 "0x521c260":
-  status: freed
+  status: released
   chunks:
     - href: /watchdog/examples/main.c:38
       file: /watchdog/examples/main.c
@@ -96,7 +96,7 @@ $ ./cmake-build-debug/main
       call: calloc
 
 "0x521c060":
-  status: leaked
+  status: in use
   chunks:
     - href: /watchdog/examples/main.c:33
       file: /watchdog/examples/main.c
