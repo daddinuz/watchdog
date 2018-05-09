@@ -38,6 +38,7 @@
 #undef exit
 #undef abort
 
+#include <time.h>
 #include <stdio.h>
 #include <assert.h>
 #include <memory.h>
@@ -107,6 +108,9 @@ __attribute__((__warn_unused_result__, __nonnull__(2)));
 static struct Watchdog_Chunk *Watchdog_Chunk_getFromMemory(const char *file, int line, const void *memory)
 __attribute__((__warn_unused_result__, __nonnull__));
 
+static const char *Watchdog_Chunk_explainStatus(const struct Watchdog_Chunk *self)
+__attribute__((__warn_unused_result__, __nonnull__));
+
 static void Watchdog_Chunk_delete(struct Watchdog_Chunk *self);
 
 /*
@@ -123,19 +127,37 @@ __attribute__((__nonnull__));
 static void Watchdog_Reporter_onExit(struct Watchdog_Reporter *self)
 __attribute__((__nonnull__));
 
-static struct Watchdog_Reporter *Watchdog_Reporter_newJsonReporter(FILE *stream)
-__attribute__((__nonnull__));
+static struct Watchdog_Reporter *Watchdog_Reporter_newJsonReporter(FILE *stream);
 
-static struct Watchdog_Reporter *Watchdog_Reporter_newYamlReporter(FILE *stream)
-__attribute__((__nonnull__));
+static struct Watchdog_Reporter *Watchdog_Reporter_newYamlReporter(FILE *stream);
 
 static void Watchdog_Reporter_delete(struct Watchdog_Reporter *self);
+
+/*
+ * Watchdog_Dumper
+ */
+struct Watchdog_Dumper;
+
+static void Watchdog_Dumper_onEnter(struct Watchdog_Dumper *self)
+__attribute__((__nonnull__));
+
+static void Watchdog_Dumper_dump(struct Watchdog_Dumper *self, const struct Watchdog_Chunk *chunk)
+__attribute__((__nonnull__));
+
+static void Watchdog_Dumper_onExit(struct Watchdog_Dumper *self)
+__attribute__((__nonnull__));
+
+static struct Watchdog_Dumper *Watchdog_Dumper_new(struct Watchdog_Reporter *reporter)
+__attribute__((__nonnull__));
+
+static void Watchdog_Dumper_delete(struct Watchdog_Dumper *self);
 
 /*
  * Watchdog_Visit
  */
 enum Watchdog_Visit {
     WATCHDOG_VISIT_NO_OP,
+    WATCHDOG_VISIT_DUMP,
     WATCHDOG_VISIT_REPORT,
     WATCHDOG_VISIT_COLLECT,
     WATCHDOG_VISIT_REPORT_AND_COLLECT,
@@ -152,16 +174,25 @@ __attribute__((__warn_unused_result__, __nonnull__));
 static enum Watchdog_Visit Watchdog_Visit_reportAndCollectFreedChunks(const struct Watchdog_Chunk *chunk)
 __attribute__((__warn_unused_result__, __nonnull__));
 
+static enum Watchdog_Visit Watchdog_Visit_dumpAliveChunks(const struct Watchdog_Chunk *chunk)
+__attribute__((__warn_unused_result__, __nonnull__));
+
 static enum Watchdog_Visit Watchdog_Visit_collectAllChunks(const struct Watchdog_Chunk *chunk)
 __attribute__((__warn_unused_result__, __nonnull__));
+
+/*
+ * Signal Handler
+ */
+static void Watchdog_signalHandler(int signo);
 
 /*
  * Global variables
  */
 static int gFrees = 0;
 static bool gIsInitialized = false;
-static FILE *gStream = NULL;
 static struct Watchdog_Chunk *gChunksHead = NULL;
+
+static struct Watchdog_Dumper *gDumper = NULL;
 static struct Watchdog_Reporter *gReporter = NULL;
 
 /*
@@ -179,48 +210,50 @@ static void Watchdog_onExit(void) {
     gChunksHead = Watchdog_Visit_traverse(gChunksHead, Watchdog_Visit_collectAllChunks);
     assert(!gChunksHead);
     (void) gChunksHead;
+    Watchdog_Dumper_delete(gDumper);
     Watchdog_Reporter_delete(gReporter);
-    if (gStream && gStream != stdout && gStream != stderr) {
-        fclose(gStream);
-    }
 }
 
-static void Watchdog_initialize(void) {
+static void Watchdog_onEnter(void) {
     if (!gIsInitialized) {
-        {   // Global stream initialization
-            if (strcmp("<stdout>", WATCHDOG_OUTPUT_STREAM) == 0) {
-                gStream = stdout;
-            } else if (strcmp("<stderr>", WATCHDOG_OUTPUT_STREAM) == 0) {
-                gStream = stderr;
-            } else if (strcmp("<tempfile>", WATCHDOG_OUTPUT_STREAM) == 0) {
-                gStream = fopen(tmpnam(NULL), "w");
-            } else {
-                char command[1024] = "";
-                const size_t commandSize = sizeof(command) - 1;
-                const char *directory = WATCHDOG_OUTPUT_STREAM;
+        // Global reporter initialization
+        FILE *stream = NULL;
+
+        if (strcmp("<stdout>", WATCHDOG_REPORT_STREAM) == 0) {
+            stream = stdout;
+        } else if (strcmp("<stderr>", WATCHDOG_REPORT_STREAM) == 0) {
+            stream = stderr;
+        } else if (strcmp("<tempfile>", WATCHDOG_REPORT_STREAM) == 0) {
+            stream = fopen(tmpnam(NULL), "w");
+        } else {
+            char command[1024] = "";
+            const size_t commandSize = sizeof(command) - 1;
+            const char *directory = WATCHDOG_REPORT_STREAM;
 #if defined(_WIN32) || defined(_WIN64)
-                snprintf(command, commandSize, "md %.*s", (int) (strrchr(directory, '\\') - directory), directory);
+            snprintf(command, commandSize, "md %.*s", (int) (strrchr(directory, '\\') - directory), directory);
 #else
-                snprintf(command, commandSize, "mkdir -p %.*s", (int) (strrchr(directory, '/') - directory), directory);
+            snprintf(command, commandSize, "mkdir -p %.*s", (int) (strrchr(directory, '/') - directory), directory);
 #endif
-                if (system(command) != 0) {
-                    Panic_terminate("Unable to create directory: %s", directory);
-                }
-                gStream = fopen(WATCHDOG_OUTPUT_STREAM, "w");
+            if (system(command) != 0) {
+                Panic_terminate("Unable to create directory: %s", directory);
             }
-            if (!gStream) {
-                Panic_terminate("Unable to open file: %s", WATCHDOG_OUTPUT_STREAM);
-            }
+            stream = fopen(WATCHDOG_REPORT_STREAM, "w");
         }
-        {   // Global reporter initialization
-            if (strcmp("<json>", WATCHDOG_OUTPUT_FORMAT) == 0) {
-                gReporter = Watchdog_Reporter_newJsonReporter(gStream);
-            } else if (strcmp("<yaml>", WATCHDOG_OUTPUT_FORMAT) == 0) {
-                gReporter = Watchdog_Reporter_newYamlReporter(gStream);
-            } else {
-                Panic_terminate("Unknown output format: %s", WATCHDOG_OUTPUT_FORMAT);
-            }
+        if (!stream) {
+            Panic_terminate("Unable to open file: %s", WATCHDOG_REPORT_STREAM);
         }
+
+        if (strcmp("<json>", WATCHDOG_REPORT_FORMAT) == 0) {
+            gReporter = Watchdog_Reporter_newJsonReporter(stream);
+            gDumper = Watchdog_Dumper_new(Watchdog_Reporter_newJsonReporter(NULL));
+        } else if (strcmp("<yaml>", WATCHDOG_REPORT_FORMAT) == 0) {
+            gReporter = Watchdog_Reporter_newYamlReporter(stream);
+            gDumper = Watchdog_Dumper_new(Watchdog_Reporter_newYamlReporter(NULL));
+        } else {
+            Panic_terminate("Unknown output format: %s", WATCHDOG_REPORT_FORMAT);
+        }
+
+        signal(WATCHDOG_SIGNAL, Watchdog_signalHandler);
         atexit(Watchdog_onExit);
         gIsInitialized = true;
     }
@@ -236,7 +269,7 @@ static void Watchdog_collect(void) {
 void *__Watchdog_malloc(const char *file, int line, size_t size) {
     assert(file);
     assert(line > 0);
-    Watchdog_initialize();
+    Watchdog_onEnter();
     Watchdog_collect();
     gChunksHead = Watchdog_Chunk_add(gChunksHead, Watchdog_Chunk_fromMalloc(file, line, size));
     return gChunksHead->memory;
@@ -245,7 +278,7 @@ void *__Watchdog_malloc(const char *file, int line, size_t size) {
 void *__Watchdog_calloc(const char *file, int line, size_t numberOfMembers, size_t memberSize) {
     assert(file);
     assert(line > 0);
-    Watchdog_initialize();
+    Watchdog_onEnter();
     Watchdog_collect();
     gChunksHead = Watchdog_Chunk_add(gChunksHead, Watchdog_Chunk_fromCalloc(file, line, numberOfMembers, memberSize));
     return gChunksHead->memory;
@@ -254,7 +287,7 @@ void *__Watchdog_calloc(const char *file, int line, size_t numberOfMembers, size
 void *__Watchdog_realloc(const char *file, int line, void *ptr, size_t newSize) {
     assert(file);
     assert(line > 0);
-    Watchdog_initialize();
+    Watchdog_onEnter();
     Watchdog_collect();
     gFrees++;
     gChunksHead = Watchdog_Chunk_add(gChunksHead, Watchdog_Chunk_fromRealloc(file, line, ptr, newSize));
@@ -264,7 +297,7 @@ void *__Watchdog_realloc(const char *file, int line, void *ptr, size_t newSize) 
 void __Watchdog_free(const char *file, int line, void *ptr) {
     assert(file);
     assert(line > 0);
-    Watchdog_initialize();
+    Watchdog_onEnter();
     Watchdog_collect();
     Watchdog_Chunk_markAsFreed(file, line, ptr);
     gFrees++;
@@ -421,6 +454,11 @@ struct Watchdog_Chunk *Watchdog_Chunk_getFromMemory(const char *const file, cons
     Panic_terminate("From %s:%d\nInvalid memory address: %p", file, line, memory);
 }
 
+const char *Watchdog_Chunk_explainStatus(const struct Watchdog_Chunk *const self) {
+    assert(self);
+    return (self->trace && WATCHDOG_TRACE_CALL_FREE != self->trace->call) ? "in use" : "released";
+}
+
 void Watchdog_Chunk_delete(struct Watchdog_Chunk *self) {
     if (self) {
         Watchdog_Trace_deleteAll(self->trace);
@@ -466,6 +504,7 @@ void Watchdog_Reporter_onEnter(struct Watchdog_Reporter *const self) {
 
 void Watchdog_Reporter_report(struct Watchdog_Reporter *const self, const struct Watchdog_Chunk *const chunk) {
     assert(self);
+    assert(self->stream);
     assert(self->report);
     self->report(self, chunk);
 }
@@ -478,7 +517,6 @@ void Watchdog_Reporter_onExit(struct Watchdog_Reporter *const self) {
 }
 
 struct Watchdog_Reporter *Watchdog_Reporter_newJsonReporter(FILE *stream) {
-    assert(stream);
     struct Watchdog_Reporter *self = malloc(sizeof(*self) + sizeof(struct Watchdog_JsonReporter_Context));
     if (self) {
         self->onEnter = Watchdog_JsonReporter_onEnter;
@@ -492,7 +530,6 @@ struct Watchdog_Reporter *Watchdog_Reporter_newJsonReporter(FILE *stream) {
 }
 
 struct Watchdog_Reporter *Watchdog_Reporter_newYamlReporter(FILE *stream) {
-    assert(stream);
     struct Watchdog_Reporter *self = malloc(sizeof(*self));
     if (self) {
         self->stream = stream;
@@ -505,6 +542,9 @@ struct Watchdog_Reporter *Watchdog_Reporter_newYamlReporter(FILE *stream) {
 
 void Watchdog_Reporter_delete(struct Watchdog_Reporter *self) {
     if (self) {
+        if (self->stream && self->stream != stdout && self->stream != stderr) {
+            fclose(self->stream);
+        }
         free(self);
     }
 }
@@ -534,8 +574,8 @@ void Watchdog_JsonReporter_report(struct Watchdog_Reporter *const self, const st
     } else {
         fprintf(self->stream, ", ");
     }
-    fprintf(self->stream, "\"%p\": {\"status\": \"%s\", \"chunks\": [",
-            chunk->memory, (WATCHDOG_TRACE_CALL_FREE == chunk->trace->call) ? "freed" : "leaked");
+    fprintf(self->stream, "\"%p\": {\"status\": \"%s\", \"chunks\": [", chunk->memory,
+            Watchdog_Chunk_explainStatus(chunk));
     for (struct Watchdog_Trace *trace = chunk->trace; trace; trace = trace->prev) {
         fprintf(self->stream, "{\"href\": \"%s:%d\", ", trace->file, trace->line);
         fprintf(self->stream, "\"file\": \"%s\", ", trace->file);
@@ -563,7 +603,7 @@ void Watchdog_YamlReporter_report(struct Watchdog_Reporter *const self, const st
     assert(chunk);
     assert(chunk->trace);
     fprintf(self->stream, "\"%p\":\n", chunk->memory);
-    fprintf(self->stream, "  status: %s\n", (WATCHDOG_TRACE_CALL_FREE == chunk->trace->call) ? "freed" : "leaked");
+    fprintf(self->stream, "  status: %s\n", Watchdog_Chunk_explainStatus(chunk));
     fprintf(self->stream, "  chunks:\n");
     for (struct Watchdog_Trace *trace = chunk->trace; trace; trace = trace->prev) {
         fprintf(self->stream, "    - href: %s:%d\n", trace->file, trace->line);
@@ -576,13 +616,76 @@ void Watchdog_YamlReporter_report(struct Watchdog_Reporter *const self, const st
 }
 
 /*
+ * Watchdog_Dumper
+ */
+struct Watchdog_Dumper {
+    struct Watchdog_Reporter *reporter;
+};
+
+void Watchdog_Dumper_onEnter(struct Watchdog_Dumper *self) {
+    assert(self);
+    assert(self->reporter);
+    self->reporter->stream = NULL;
+}
+
+void Watchdog_Dumper_dump(struct Watchdog_Dumper *const self, const struct Watchdog_Chunk *const chunk) {
+    assert(self);
+    assert(self->reporter);
+    assert(chunk);
+    if (!self->reporter->stream) {
+        char buffer[1024] = "";
+        snprintf(buffer, (sizeof(buffer) / sizeof(buffer[0])) - 1, "watchdog-%zu.dump", (size_t) time(NULL));
+        self->reporter->stream = fopen(buffer, "w");
+        if (!self->reporter->stream) {
+            Panic_terminate("Unable to pen file: %s", buffer);
+        }
+    }
+    Watchdog_Reporter_report(self->reporter, chunk);
+}
+
+void Watchdog_Dumper_onExit(struct Watchdog_Dumper *self) {
+    assert(self);
+    assert(self->reporter);
+    if (self->reporter->stream) {
+        assert(self->reporter->stream != stderr);
+        assert(self->reporter->stream != stdout);
+        fclose(self->reporter->stream);
+    }
+}
+
+struct Watchdog_Dumper *Watchdog_Dumper_new(struct Watchdog_Reporter *reporter) {
+    assert(reporter);
+    assert(!reporter->stream);
+    struct Watchdog_Dumper *self = malloc(sizeof(*self));
+    if (self) {
+        self->reporter = reporter;
+        return self;
+    }
+    Panic_terminate("Out of memory");
+}
+
+void Watchdog_Dumper_delete(struct Watchdog_Dumper *self) {
+    if (self) {
+        assert(self->reporter);
+        Watchdog_Reporter_delete(self->reporter);
+        free(self);
+    }
+}
+
+/*
  * Watchdog_Visit
  */
 struct Watchdog_Chunk *Watchdog_Visit_traverse(struct Watchdog_Chunk *start, Watchdog_Chunk_VisitFn visit) {
+    Watchdog_Dumper_onEnter(gDumper);
     Watchdog_Reporter_onEnter(gReporter);
     for (struct Watchdog_Chunk *beforeMe = NULL, *current = start; current;) {
         switch (visit(current)) {
             case WATCHDOG_VISIT_NO_OP:
+                beforeMe = current;
+                current = current->prev;
+                continue;
+            case WATCHDOG_VISIT_DUMP:
+                Watchdog_Dumper_dump(gDumper, current);
                 beforeMe = current;
                 current = current->prev;
                 continue;
@@ -621,6 +724,7 @@ struct Watchdog_Chunk *Watchdog_Visit_traverse(struct Watchdog_Chunk *start, Wat
         }
     }
     Watchdog_Reporter_onExit(gReporter);
+    Watchdog_Dumper_onExit(gDumper);
     return start;
 }
 
@@ -631,6 +735,14 @@ enum Watchdog_Visit Watchdog_Visit_reportAllAndCollectFreedChunks(const struct W
                                                                 : WATCHDOG_VISIT_REPORT;
     }
     return WATCHDOG_VISIT_COLLECT;
+}
+
+enum Watchdog_Visit Watchdog_Visit_dumpAliveChunks(const struct Watchdog_Chunk *const chunk) {
+    assert(chunk);
+    if (chunk->trace && WATCHDOG_TRACE_CALL_FREE != chunk->trace->call) {
+        return WATCHDOG_VISIT_DUMP;
+    }
+    return WATCHDOG_VISIT_NO_OP;
 }
 
 enum Watchdog_Visit Watchdog_Visit_reportAndCollectFreedChunks(const struct Watchdog_Chunk *const chunk) {
@@ -646,4 +758,10 @@ enum Watchdog_Visit Watchdog_Visit_collectAllChunks(const struct Watchdog_Chunk 
     (void) chunk;
     assert(chunk);
     return WATCHDOG_VISIT_COLLECT;
+}
+
+void Watchdog_signalHandler(int signo) {
+    (void) signo;
+    assert(WATCHDOG_SIGNAL == signo);
+    gChunksHead = Watchdog_Visit_traverse(gChunksHead, Watchdog_Visit_dumpAliveChunks);
 }

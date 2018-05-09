@@ -32,8 +32,9 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
 #include <stdlib.h>
+#include <stddef.h>
+#include <signal.h>
 
 #if !(defined(__GNUC__) || defined(__clang__))
 #define __attribute__(...)
@@ -41,17 +42,21 @@ extern "C" {
 
 #define WATCHDOG_VERSION_MAJOR       0
 #define WATCHDOG_VERSION_MINOR       2
-#define WATCHDOG_VERSION_PATCH       2
+#define WATCHDOG_VERSION_PATCH       3
 #define WATCHDOG_VERSION_SUFFIX      ""
 #define WATCHDOG_VERSION_IS_RELEASE  0
-#define WATCHDOG_VERSION_HEX         0x000202
+#define WATCHDOG_VERSION_HEX         0x000203
 
-#ifndef WATCHDOG_OUTPUT_STREAM      /* "<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.ext" */
-#define WATCHDOG_OUTPUT_STREAM      "<stderr>"
+#ifndef WATCHDOG_SIGNAL
+#define WATCHDOG_SIGNAL             SIGUSR1
 #endif
 
-#ifndef WATCHDOG_OUTPUT_FORMAT      /* "<yaml>" | "<json>" */
-#define WATCHDOG_OUTPUT_FORMAT      "<yaml>"
+#ifndef WATCHDOG_REPORT_STREAM      /* "<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.ext" */
+#define WATCHDOG_REPORT_STREAM      "<stderr>"
+#endif
+
+#ifndef WATCHDOG_REPORT_FORMAT      /* "<yaml>" | "<json>" */
+#define WATCHDOG_REPORT_FORMAT      "<yaml>"
 #endif
 
 /**
