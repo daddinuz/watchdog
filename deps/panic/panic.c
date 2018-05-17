@@ -33,13 +33,6 @@
 #include <assert.h>
 #include "panic.h"
 
-#define _STR(x)    #x
-#define STR(x)      _STR(x)
-
-const char *Panic_version(void) {
-    return STR(PANIC_VERSION_MAJOR) "." STR(PANIC_VERSION_MINOR) "." STR(PANIC_VERSION_PATCH) PANIC_VERSION_SUFFIX;
-}
-
 static Panic_Callback globalCallback = NULL;
 
 Panic_Callback Panic_registerCallback(const Panic_Callback callback) {

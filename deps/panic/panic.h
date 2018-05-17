@@ -39,17 +39,11 @@ extern "C" {
 #endif
 
 #define PANIC_VERSION_MAJOR       0
-#define PANIC_VERSION_MINOR       2
+#define PANIC_VERSION_MINOR       3
 #define PANIC_VERSION_PATCH       0
 #define PANIC_VERSION_SUFFIX      ""
 #define PANIC_VERSION_IS_RELEASE  0
-#define PANIC_VERSION_HEX         0x000200
-
-/**
- * @return The semantic versioning string of the package.
- */
-extern const char *Panic_version(void)
-__attribute__((__warn_unused_result__));
+#define PANIC_VERSION_HEX         0x000300
 
 /**
  * Type signature of the callback function to be executed on exit.

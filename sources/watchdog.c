@@ -48,9 +48,6 @@
 #define COLLECT_THRESHOLD   16
 #define MAGIC_NUMBER        ((void *) 0xdeadbeaf)
 
-#define _STR(x)             #x
-#define STR(x)              _STR(x)
-
 /*
  * Watchdog_Trace
  */
@@ -198,13 +195,6 @@ static struct Watchdog_Reporter *gReporter = NULL;
 /*
  * Watchdog
  */
-const char *Watchdog_version(void) {
-    return STR(WATCHDOG_VERSION_MAJOR) "."
-           STR(WATCHDOG_VERSION_MINOR) "."
-           STR(WATCHDOG_VERSION_PATCH)
-           WATCHDOG_VERSION_SUFFIX;
-}
-
 static void Watchdog_onExit(void) {
     gChunksHead = Watchdog_Visit_traverse(gChunksHead, Watchdog_Visit_reportAllAndCollectFreedChunks);
     gChunksHead = Watchdog_Visit_traverse(gChunksHead, Watchdog_Visit_collectAllChunks);

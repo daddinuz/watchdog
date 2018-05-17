@@ -41,11 +41,11 @@ extern "C" {
 #endif
 
 #define WATCHDOG_VERSION_MAJOR       0
-#define WATCHDOG_VERSION_MINOR       2
-#define WATCHDOG_VERSION_PATCH       3
+#define WATCHDOG_VERSION_MINOR       3
+#define WATCHDOG_VERSION_PATCH       0
 #define WATCHDOG_VERSION_SUFFIX      ""
 #define WATCHDOG_VERSION_IS_RELEASE  0
-#define WATCHDOG_VERSION_HEX         0x000203
+#define WATCHDOG_VERSION_HEX         0x000300
 
 #ifndef WATCHDOG_SIGNAL
 #define WATCHDOG_SIGNAL             SIGUSR1
@@ -58,12 +58,6 @@ extern "C" {
 #ifndef WATCHDOG_REPORT_FORMAT      /* "<yaml>" | "<json>" */
 #define WATCHDOG_REPORT_FORMAT      "<yaml>"
 #endif
-
-/**
- * @return The semantic versioning string of the package.
- */
-extern const char *Watchdog_version(void)
-__attribute__((__warn_unused_result__));
 
 /**
  * Same as malloc from stdlib.h

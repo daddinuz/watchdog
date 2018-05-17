@@ -1,7 +1,7 @@
 {
   "name": "panic",
   "repo": "daddinuz/panic",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "A panic library to abort execution on non-recoverable errors with a detailed message",
   "keywords": [
@@ -15,5 +15,5 @@
     "sources/panic.h",
     "sources/panic.c"
   ],
-  "makefile": "panic.cmake"
+  "makefile": "sources/build.cmake"
 }

@@ -1,7 +1,7 @@
 {
   "name": "watchdog",
   "repo": "daddinuz/watchdog",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "C99-compliant runtime memory tracer library useful to find memory leaks or analyze memory usage.",
   "keywords": [
@@ -16,7 +16,7 @@
     "sources/watchdog.c"
   ],
   "dependencies": {
-    "daddinuz/panic": "0.2.0"
+    "daddinuz/panic": "0.3.0"
   },
-  "makefile": "watchdog.cmake"
+  "makefile": "sources/build.cmake"
 }
