@@ -7,6 +7,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Werror")
 # dependencies
 include_directories(deps)
 include(deps/panic/build.cmake)
+include(deps/error/build.cmake)
+include(deps/process/build.cmake)
 
 # archive
 include_directories(sources)

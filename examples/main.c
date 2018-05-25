@@ -26,21 +26,51 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include <time.h>
 #include <watchdog.h>
+#include <panic/panic.h>
+#include <process/process.h>
 
+void doSomething(void) {
+    char *buffer = calloc(64, sizeof(buffer[0]));
+    printf("%.*s", snprintf(buffer, 63, "%d:%lu", Process_getCurrentId(), time(NULL)), buffer);
+    free(buffer);
+}
 
 int main(void) {
-    double *number = malloc(sizeof(double));  // no frees, this will leak
-    (void) number; // free(number);
+    char buffer[64] = "";
+    const size_t bufferSize = sizeof(buffer) / sizeof(buffer[0]) - 1;
+    struct Process_ExitInfo info;
+    struct Process processesArray[2];
+    const struct Process *processesArrayEnd = &processesArray[sizeof(processesArray) / sizeof(processesArray[0])];
 
-    int *integer = calloc(10, sizeof(char));
-    integer = realloc(integer, 12 * sizeof(integer[0]));
-    free(integer);
-
-    char *s = realloc(NULL, sizeof(*s) * 5);
-    for (size_t i = 16; i < 32; i += 2) {
-        s = realloc(s, i);  // this will leak too
+    for (struct Process *process = processesArray; process < processesArrayEnd; process++) {
+        if (Process_spawn(process, doSomething) != Ok) {
+            Panic_terminate("Unable to fork");
+        }
+        printf("Spawned process: %d\n", Process_id(process));
     }
 
+    for (struct Process *process = processesArray; process < processesArrayEnd; process++) {
+        const Error e = Process_isAlive(process) ? Process_wait(process, &info) : Process_exitInfo(process, &info);
+        if (e != Ok) {
+            Panic_terminate("%s", Error_explain(e));
+        }
+        const long bytesRead = Process_readOutputStream(process, buffer, bufferSize);
+        if (bytesRead < 0) {
+            Panic_terminate("Unexpected error while reading from output stream of process: %d", Process_id(process));
+        }
+        printf("Process: %d exitNormally: %d exitValue: %2d output: %.*s\n",
+               Process_id(process), info.exitNormally, info.exitValue, (int) bytesRead, buffer);
+        Process_teardown(process);
+    }
+
+    void *a = malloc(32);
+    void *b = malloc(16);
+    void *c = malloc(32);
+    (void) a; // free(a);
+    b = realloc(b, 32);
+    (void) b; // free(b);
+    free(c);
     return 0;
 }
