@@ -16,7 +16,8 @@
     "sources/watchdog.c"
   ],
   "dependencies": {
-    "daddinuz/panic": "0.3.0"
+    "daddinuz/panic": "0.3.0",
+    "daddinuz/process": "0.1.0"
   },
   "makefile": "sources/build.cmake"
 }
