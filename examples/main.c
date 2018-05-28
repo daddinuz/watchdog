@@ -27,6 +27,8 @@
  */
 
 #include <time.h>
+#include <stddef.h>
+#include <stdalign.h>
 #include <watchdog.h>
 #include <panic/panic.h>
 #include <process/process.h>
@@ -65,7 +67,7 @@ int main(void) {
         Process_teardown(process);
     }
 
-    void *a = malloc(32);
+    void *a = aligned_alloc(alignof(max_align_t), 32);
     void *b = malloc(16);
     void *c = malloc(32);
     (void) a; // free(a);

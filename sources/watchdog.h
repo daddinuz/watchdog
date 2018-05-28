@@ -33,8 +33,6 @@ extern "C" {
 #endif
 
 #include <stdlib.h>
-#include <stddef.h>
-#include <signal.h>
 
 #if !(defined(__GNUC__) || defined(__clang__))
 #define __attribute__(...)
@@ -46,6 +44,21 @@ extern "C" {
 #define WATCHDOG_VERSION_SUFFIX         ""
 #define WATCHDOG_VERSION_IS_RELEASE     0
 #define WATCHDOG_VERSION_HEX            0x000400
+
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+
+/**
+ * Same as aligned_alloc from stdlib.h since C11
+ *
+ * @attention Do not use this function directly use the macro instead.
+ */
+extern void *__Watchdog_aligned_alloc(const char *file, int line, size_t alignment, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__(1)));
+
+#define Watchdog_aligned_alloc(alignment, size) \
+    __Watchdog_aligned_alloc(__FILE__, __LINE__, (alignment), (size))
+
+#endif
 
 /**
  * Same as malloc from stdlib.h
@@ -95,6 +108,14 @@ __attribute__((__nonnull__(1)));
  * Macros
  */
 #if !defined(NDEBUG) || defined(WATCHDOG_DISABLED)
+
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+
+#undef aligned_alloc
+#define aligned_alloc(alignment, size) \
+    Watchdog_aligned_alloc((alignment), (size))
+
+#endif
 
 #undef malloc
 #define malloc(size) \
