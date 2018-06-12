@@ -33,30 +33,31 @@ extern "C" {
 #endif
 
 #include <stdlib.h>
-#include <stddef.h>
-#include <signal.h>
 
 #if !(defined(__GNUC__) || defined(__clang__))
 #define __attribute__(...)
 #endif
 
-#define WATCHDOG_VERSION_MAJOR       0
-#define WATCHDOG_VERSION_MINOR       3
-#define WATCHDOG_VERSION_PATCH       0
-#define WATCHDOG_VERSION_SUFFIX      ""
-#define WATCHDOG_VERSION_IS_RELEASE  0
-#define WATCHDOG_VERSION_HEX         0x000300
+#define WATCHDOG_VERSION_MAJOR          0
+#define WATCHDOG_VERSION_MINOR          4
+#define WATCHDOG_VERSION_PATCH          0
+#define WATCHDOG_VERSION_SUFFIX         ""
+#define WATCHDOG_VERSION_IS_RELEASE     0
+#define WATCHDOG_VERSION_HEX            0x000400
 
-#ifndef WATCHDOG_SIGNAL
-#define WATCHDOG_SIGNAL             SIGUSR1
-#endif
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 
-#ifndef WATCHDOG_REPORT_STREAM      /* "<stderr>" | "<stdout>" | "<tempfile>" | "/path/to/file.ext" */
-#define WATCHDOG_REPORT_STREAM      "<stderr>"
-#endif
+/**
+ * Same as aligned_alloc from stdlib.h since C11
+ *
+ * @attention Do not use this function directly use the macro instead.
+ */
+extern void *__Watchdog_aligned_alloc(const char *file, int line, size_t alignment, size_t size)
+__attribute__((__warn_unused_result__, __nonnull__(1)));
 
-#ifndef WATCHDOG_REPORT_FORMAT      /* "<yaml>" | "<json>" */
-#define WATCHDOG_REPORT_FORMAT      "<yaml>"
+#define Watchdog_aligned_alloc(alignment, size) \
+    __Watchdog_aligned_alloc(__FILE__, __LINE__, (alignment), (size))
+
 #endif
 
 /**
@@ -86,47 +87,35 @@ __attribute__((__warn_unused_result__, __nonnull__(1)));
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void *__Watchdog_realloc(const char *file, int line, void *ptr, size_t newSize)
+extern void *__Watchdog_realloc(const char *file, int line, void *memory, size_t newSize)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
-#define Watchdog_realloc(ptr, newSize) \
-    __Watchdog_realloc(__FILE__, __LINE__, (ptr), (newSize))
+#define Watchdog_realloc(memory, newSize) \
+    __Watchdog_realloc(__FILE__, __LINE__, (memory), (newSize))
 
 /**
  * Same as free from stdlib.h
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void __Watchdog_free(const char *file, int line, void *ptr)
+extern void __Watchdog_free(const char *file, int line, void *memory)
 __attribute__((__nonnull__(1)));
 
-#define Watchdog_free(ptr) \
-    __Watchdog_free(__FILE__, __LINE__, (ptr))
+#define Watchdog_free(memory) \
+    __Watchdog_free(__FILE__, __LINE__, (memory))
 
-/**
- * Same as exit from stdlib.h
- *
- * @attention Do not use this function directly use the macro instead.
+/*
+ * Macros
  */
-extern void __Watchdog_exit(const char *file, int line, int status)
-__attribute__((__noreturn__, __nonnull__(1)));
-
-#define Watchdog_exit(status) \
-    __Watchdog_exit(__FILE__, __LINE__, (status))
-
-/**
- * Same as abort from stdlib.h
- *
- * @attention Do not use this function directly use the macro instead.
- */
-extern void __Watchdog_abort(const char *file, int line)
-__attribute__((__noreturn__, __nonnull__(1)));
-
-#define Watchdog_abort() \
-    __Watchdog_abort(__FILE__, __LINE__)
-
-
 #if !defined(NDEBUG) || defined(WATCHDOG_DISABLED)
+
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
+
+#undef aligned_alloc
+#define aligned_alloc(alignment, size) \
+    Watchdog_aligned_alloc((alignment), (size))
+
+#endif
 
 #undef malloc
 #define malloc(size) \
@@ -137,20 +126,12 @@ __attribute__((__noreturn__, __nonnull__(1)));
     Watchdog_calloc((numberOfMembers), (memberSize))
 
 #undef realloc
-#define realloc(ptr, newSize) \
-    Watchdog_realloc((ptr), (newSize))
+#define realloc(memory, newSize) \
+    Watchdog_realloc((memory), (newSize))
 
 #undef free
-#define free(ptr) \
-    Watchdog_free((ptr))
-
-#undef exit
-#define exit(status) \
-    Watchdog_exit((status))
-
-#undef abort
-#define abort() \
-    Watchdog_abort()
+#define free(memory) \
+    Watchdog_free((memory))
 
 #endif
 
