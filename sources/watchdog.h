@@ -39,11 +39,11 @@ extern "C" {
 #endif
 
 #define WATCHDOG_VERSION_MAJOR          0
-#define WATCHDOG_VERSION_MINOR          4
+#define WATCHDOG_VERSION_MINOR          5
 #define WATCHDOG_VERSION_PATCH          0
 #define WATCHDOG_VERSION_SUFFIX         ""
 #define WATCHDOG_VERSION_IS_RELEASE     0
-#define WATCHDOG_VERSION_HEX            0x000400
+#define WATCHDOG_VERSION_HEX            0x000500
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 
@@ -52,11 +52,11 @@ extern "C" {
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void *__Watchdog_aligned_alloc(const char *file, int line, size_t alignment, size_t size)
+extern void *__Watchdog_aligned_alloc(const char *file, const char *func, int line, size_t alignment, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
 #define Watchdog_aligned_alloc(alignment, size) \
-    __Watchdog_aligned_alloc(__FILE__, __LINE__, (alignment), (size))
+    __Watchdog_aligned_alloc(__FILE__, __func__, __LINE__, (alignment), (size))
 
 #endif
 
@@ -65,44 +65,44 @@ __attribute__((__warn_unused_result__, __nonnull__(1)));
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void *__Watchdog_malloc(const char *file, int line, size_t size)
+extern void *__Watchdog_malloc(const char *file, const char *func, int line, size_t size)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
 #define Watchdog_malloc(size) \
-    __Watchdog_malloc(__FILE__, __LINE__, (size))
+    __Watchdog_malloc(__FILE__, __func__, __LINE__, (size))
 
 /**
  * Same as calloc from stdlib.h
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void *__Watchdog_calloc(const char *file, int line, size_t numberOfMembers, size_t memberSize)
+extern void *__Watchdog_calloc(const char *file, const char *func, int line, size_t numberOfMembers, size_t memberSize)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
 #define Watchdog_calloc(numberOfMembers, memberSize) \
-    __Watchdog_calloc(__FILE__, __LINE__, (numberOfMembers), (memberSize))
+    __Watchdog_calloc(__FILE__, __func__, __LINE__, (numberOfMembers), (memberSize))
 
 /**
  * Same as realloc from stdlib.h
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void *__Watchdog_realloc(const char *file, int line, void *memory, size_t newSize)
+extern void *__Watchdog_realloc(const char *file, const char *func, int line, void *memory, size_t newSize)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
 #define Watchdog_realloc(memory, newSize) \
-    __Watchdog_realloc(__FILE__, __LINE__, (memory), (newSize))
+    __Watchdog_realloc(__FILE__, __func__, __LINE__, (memory), (newSize))
 
 /**
  * Same as free from stdlib.h
  *
  * @attention Do not use this function directly use the macro instead.
  */
-extern void __Watchdog_free(const char *file, int line, void *memory)
+extern void __Watchdog_free(const char *file, const char *func, int line, void *memory)
 __attribute__((__nonnull__(1)));
 
 #define Watchdog_free(memory) \
-    __Watchdog_free(__FILE__, __LINE__, (memory))
+    __Watchdog_free(__FILE__, __func__, __LINE__, (memory))
 
 /*
  * Macros

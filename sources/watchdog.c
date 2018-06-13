@@ -54,51 +54,53 @@ static FILE *gStream = NULL;
  * Watchdog
  */
 static void
-Watchdog_report(const char *call, const char *file, int line, const void *relocated, const void *address, size_t size);
+Watchdog_report(const char *call, const char *file, const char *func, int line,
+                const void *relocated, const void *address, size_t size);
 
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
 
-void *__Watchdog_aligned_alloc(const char *file, int line, size_t alignment, size_t size) {
+void *__Watchdog_aligned_alloc(const char *file, const char *func, int line, size_t alignment, size_t size) {
     assert(file);
     assert(line > 0);
     void *address = aligned_alloc(alignment, size);
-    Watchdog_report("aligned_alloc", file, line, NULL, address, size);
+    Watchdog_report("aligned_alloc", file, func, line, NULL, address, size);
     return address;
 }
 
 #endif
 
 
-void *__Watchdog_malloc(const char *const file, const int line, const size_t size) {
+void *__Watchdog_malloc(const char *file, const char *func, int line, const size_t size) {
     assert(file);
     assert(line > 0);
     void *address = malloc(size);
-    Watchdog_report("malloc", file, line, NULL, address, size);
+    Watchdog_report("malloc", file, func, line, NULL, address, size);
     return address;
 }
 
-void *__Watchdog_calloc(const char *const file, const int line, const size_t numberOfMembers, const size_t memberSize) {
+void *
+__Watchdog_calloc(const char *file, const char *func, int line, const size_t numberOfMembers, const size_t memberSize) {
     assert(file);
     assert(line > 0);
     void *address = calloc(numberOfMembers, memberSize);
-    Watchdog_report("calloc", file, line, NULL, address, numberOfMembers * memberSize);
+    Watchdog_report("calloc", file, func, line, NULL, address, numberOfMembers * memberSize);
     return address;
 }
 
-void *__Watchdog_realloc(const char *const file, const int line, void *const memory, const size_t newSize) {
+void *__Watchdog_realloc(const char *file, const char *func, int line, void *const memory, const size_t newSize) {
     assert(file);
     assert(line > 0);
     void *address = realloc(memory, newSize);
-    Watchdog_report("realloc", file, line, memory, address, newSize);
+    Watchdog_report("realloc", file, func, line, memory, address, newSize);
     return address;
 }
 
-void __Watchdog_free(const char *const file, const int line, void *const memory) {
+void __Watchdog_free(const char *file, const char *func, int line, void *const memory) {
     assert(file);
     assert(line > 0);
     free(memory);
-    Watchdog_report("free", file, line, NULL, memory, 0);
+    Watchdog_report("free", file, func, line, NULL, memory, 0);
 }
 
 /*
@@ -110,8 +112,8 @@ static void Watchdog_onExit(void) {
     }
 }
 
-void Watchdog_report(const char *const call, const char *const file, const int line, const void *const relocated,
-                     const void *const address, const size_t size) {
+void Watchdog_report(const char *const call, const char *file, const char *func, int line,
+                     const void *const relocated, const void *const address, const size_t size) {
     assert(call);
     assert(file);
     assert(line > 0);
@@ -130,11 +132,11 @@ void Watchdog_report(const char *const call, const char *const file, const int l
     const long PID = Process_getCurrentId(), parentPID = Process_getParentId(), timestamp = time(NULL);
     if (relocated) {
         fprintf(gStream,
-                "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"line\": %d, \"address\": {\"from\": \"%p\", \"to\": \"%p\"}, \"size\": %zu, \"timestamp\": %lu}\n",
-                PID, parentPID, call, file, line, relocated, address, size, timestamp);
+                "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"func\": \"%s\", \"line\": %d, \"address\": {\"from\": \"%p\", \"to\": \"%p\"}, \"size\": %zu, \"timestamp\": %lu}\n",
+                PID, parentPID, call, file, func, line, relocated, address, size, timestamp);
     } else {
         fprintf(gStream,
-                "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"line\": %d, \"address\": \"%p\", \"size\": %zu, \"timestamp\": %lu}\n",
-                PID, parentPID, call, file, line, address, size, timestamp);
+                "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"func\": \"%s\", \"line\": %d, \"address\": \"%p\", \"size\": %zu, \"timestamp\": %lu}\n",
+                PID, parentPID, call, file, func, line, address, size, timestamp);
     }
 }
