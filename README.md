@@ -10,14 +10,15 @@ Watchdog fulfills only the following task:
 
  * log every usage of heap memory while the program is running.
 
-This allows, with a small overhead over performances, to maintain the whole "history" of the dynamic memory usage, that can be analyzed in a separate stage.
-At this point one can freely analyze the "history" by itself. Alternatively [watchdog analyzer](https://github.com/daddinuz/watchdog_analyzer "watchdog_analyzer") can be used to ease this task.
+This allows, with a small overhead over performances, to maintain the whole "history" of the dynamic memory usage, that can be analyzed in a separate stage.  
+At this point one can freely analyze the "history" by itself, alternatively [watchdog analyzer](https://github.com/daddinuz/watchdog_analyzer "watchdog_analyzer") can be used to ease this task.
 
 ### How to integrate?
 
-Watchdog is designed to be integrated simply into the existing code. One should just include "watchdog.h" instead of "stdlib.h" into the files that need to be traced.
+Watchdog is designed to be integrated simply into the existing code.  
+One should just include "watchdog.h" instead of "stdlib.h" into the files that need to be traced.
 
-Watchdog does not trace external libraries. It only traces those ones in which it is included.
+Watchdog does not trace external libraries, it only traces those ones in which it is included.
 
 ### How to turn it off?
  
