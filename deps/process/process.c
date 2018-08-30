@@ -1,29 +1,28 @@
 /*
- * Author: daddinuz
- * email:  daddinuz@gmail.com
- *
- * Copyright (c) 2018 Davide Di Carlo
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+Author: daddinuz
+email:  daddinuz@gmail.com
+
+Copyright (c) 2018 Davide Di Carlo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include <wait.h>
@@ -68,8 +67,7 @@ __attribute__((__nonnull__));
 /*
  * Process
  */
-const Error ProcessUnableToFork = Error_new("Unable to fork");
-const Error ProcessInvalidState = Error_new("Invalid process state");
+const Error Process_UnableToFork = Error_new("Unable to fork");
 
 static void Process_setExitInfoFromStatus(struct Process *self, int status)
 __attribute__((__nonnull__));
@@ -87,7 +85,7 @@ Error Process_spawn(struct Process *const self, void (*const f)(void)) {
 
     switch (pid = fork()) {
         case -1: {  // error
-            return ProcessUnableToFork;
+            return Process_UnableToFork;
         }
         case 0: {   // child process
             fflush(NULL);
@@ -149,7 +147,7 @@ Error Process_wait(struct Process *const self, struct Process_ExitInfo *const ou
         }
         return Ok;
     } else {
-        return ProcessInvalidState;
+        return IllegalState;
     }
 }
 
@@ -189,7 +187,7 @@ Error Process_cancel(struct Process *const self, struct Process_ExitInfo *const 
         }
         return Ok;
     } else {
-        return ProcessInvalidState;
+        return IllegalState;
     }
 }
 
@@ -199,7 +197,7 @@ Error Process_exitInfo(const struct Process *const self, struct Process_ExitInfo
     assert(out);
 
     if (self->_isAlive) {
-        return ProcessInvalidState;
+        return IllegalState;
     } else {
         out->exitNormally = self->_exitNormally;
         out->exitValue = self->_exitValue;

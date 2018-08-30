@@ -1,17 +1,18 @@
 {
   "name": "process",
   "repo": "daddinuz/process",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "...",
+  "description": "Spawn and intercommunication between processes.",
   "keywords": [
+    "process"
   ],
   "src": [
     "sources/process.h",
     "sources/process.c"
   ],
   "dependencies": {
-    "daddinuz/error": "0.2.0",
+    "daddinuz/error": "0.3.0",
     "daddinuz/panic": "0.3.0"
   },
   "makefile": "sources/build.cmake"

@@ -1,36 +1,31 @@
 /*
- * Author: daddinuz
- * email:  daddinuz@gmail.com
- *
- * Copyright (c) 2018 Davide Di Carlo
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
+Author: daddinuz
+email:  daddinuz@gmail.com
+
+Copyright (c) 2018 Davide Di Carlo
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #pragma once
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdio.h>
 #include <stddef.h>
@@ -38,18 +33,21 @@ extern "C" {
 #include <error/error.h>
 
 #if !(defined(__GNUC__) || defined(__clang__))
-#define __attribute__(...)
+__attribute__(...)
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #define PROCESS_VERSION_MAJOR        0
-#define PROCESS_VERSION_MINOR        1
+#define PROCESS_VERSION_MINOR        2
 #define PROCESS_VERSION_PATCH        0
 #define PROCESS_VERSION_SUFFIX       ""
 #define PROCESS_VERSION_IS_RELEASE   0
-#define PROCESS_VERSION_HEX          0x000100
+#define PROCESS_VERSION_HEX          0x000200
 
-extern const Error ProcessUnableToFork;
-extern const Error ProcessInvalidState;
+extern const Error Process_UnableToFork;
 
 struct Process_ExitInfo {
     int exitValue;
@@ -70,16 +68,16 @@ struct Process {
     bool _isAlive;
 };
 
-extern ErrorOf(Ok, ProcessUnableToFork) Process_spawn(struct Process *self, void (*f)(void))
+extern ErrorOf(Ok, Process_UnableToFork) Process_spawn(struct Process *self, void (*f)(void))
 __attribute__((__warn_unused_result__, __nonnull__));
 
-extern ErrorOf(Ok, ProcessInvalidState) Process_wait(struct Process *self, struct Process_ExitInfo *out)
+extern ErrorOf(Ok, IllegalState) Process_wait(struct Process *self, struct Process_ExitInfo *out)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
-extern ErrorOf(Ok, ProcessInvalidState) Process_cancel(struct Process *self, struct Process_ExitInfo *out)
+extern ErrorOf(Ok, IllegalState) Process_cancel(struct Process *self, struct Process_ExitInfo *out)
 __attribute__((__warn_unused_result__, __nonnull__(1)));
 
-extern ErrorOf(Ok, ProcessInvalidState) Process_exitInfo(const struct Process *self, struct Process_ExitInfo *out)
+extern ErrorOf(Ok, IllegalState) Process_exitInfo(const struct Process *self, struct Process_ExitInfo *out)
 __attribute__((__warn_unused_result__, __nonnull__));
 
 extern long Process_writeInputStream(struct Process *self, const char *buffer, size_t size)
