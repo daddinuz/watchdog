@@ -30,8 +30,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Un-define overrides over stdlib.h
  */
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-#undef aligned_alloc
+#if WATCHDOG_HAS_C11_SUPPORT
+#   undef aligned_alloc
 #endif
 #undef malloc
 #undef calloc
@@ -52,16 +52,14 @@ static FILE *gStream = NULL;
 /*
  * Watchdog
  */
-static void
-Watchdog_report(const char *call, const char *file, const char *func, int line,
-                const void *relocated, const void *address, size_t size);
+static void Watchdog_report(const char *call, const char *file, const char *func, int line,
+                            const void *relocated, const void *address, size_t size);
 
+#if WATCHDOG_HAS_C11_SUPPORT
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || (defined(__cplusplus) && __cplusplus >= 201103L)
-
-void *__Watchdog_aligned_alloc(const char *file, const char *func, int line, size_t alignment, size_t size) {
-    assert(file);
-    assert(line > 0);
+void *__Watchdog_aligned_alloc(const char *const file, const char *const func, const int line,
+                               const size_t alignment, const size_t size) {
+    assert(NULL != file);
     void *address = aligned_alloc(alignment, size);
     Watchdog_report("aligned_alloc", file, func, line, NULL, address, size);
     return address;
@@ -69,35 +67,31 @@ void *__Watchdog_aligned_alloc(const char *file, const char *func, int line, siz
 
 #endif
 
-
-void *__Watchdog_malloc(const char *file, const char *func, int line, const size_t size) {
-    assert(file);
-    assert(line > 0);
+void *__Watchdog_malloc(const char *const file, const char *const func, const int line, const size_t size) {
+    assert(NULL != file);
     void *address = malloc(size);
     Watchdog_report("malloc", file, func, line, NULL, address, size);
     return address;
 }
 
-void *
-__Watchdog_calloc(const char *file, const char *func, int line, const size_t numberOfMembers, const size_t memberSize) {
-    assert(file);
-    assert(line > 0);
+void *__Watchdog_calloc(const char *const file, const char *const func, const int line,
+                        const size_t numberOfMembers, const size_t memberSize) {
+    assert(NULL != file);
     void *address = calloc(numberOfMembers, memberSize);
     Watchdog_report("calloc", file, func, line, NULL, address, numberOfMembers * memberSize);
     return address;
 }
 
-void *__Watchdog_realloc(const char *file, const char *func, int line, void *const memory, const size_t newSize) {
-    assert(file);
-    assert(line > 0);
+void *__Watchdog_realloc(const char *const file, const char *const func, const int line,
+                         void *const memory, const size_t newSize) {
+    assert(NULL != file);
     void *address = realloc(memory, newSize);
     Watchdog_report("realloc", file, func, line, memory, address, newSize);
     return address;
 }
 
-void __Watchdog_free(const char *file, const char *func, int line, void *const memory) {
-    assert(file);
-    assert(line > 0);
+void __Watchdog_free(const char *const file, const char *const func, const int line, void *const memory) {
+    assert(NULL != file);
     free(memory);
     Watchdog_report("free", file, func, line, NULL, memory, 0);
 }
@@ -106,30 +100,30 @@ void __Watchdog_free(const char *file, const char *func, int line, void *const m
  *
  */
 static void Watchdog_onExit(void) {
-    if (gStream) {
+    if (NULL != gStream) {
         fclose(gStream);
     }
 }
 
-void Watchdog_report(const char *const call, const char *file, const char *func, int line,
+void Watchdog_report(const char *const call, const char *const file, const char *const func, const int line,
                      const void *const relocated, const void *const address, const size_t size) {
-    assert(call);
-    assert(file);
-    assert(line > 0);
-    assert(address);
+    assert(NULL != call);
+    assert(NULL != file);
+    assert(NULL != func);
+    assert(NULL != address);
 
-    if (!gStream) {
-        char buffer[64] = "";
-        snprintf(buffer, 63, "watchdog-%lu.jsonl", time(NULL));
-        gStream = fopen(buffer, "a");
-        if (!gStream) {
-            Panic_terminate("Unable to open file: %s", buffer);
+    if (NULL == gStream) {
+        char fileName[65] = "";
+        snprintf(fileName, 64, ".watchdog-%d-%lu.jsonl", WATCHDOG_VERSION_HEX, time(NULL));
+        gStream = fopen(fileName, "w");
+        if (NULL == gStream) {
+            Panic_terminate("Unable to open file: %s", fileName);
         }
         atexit(Watchdog_onExit);
     }
 
     const long PID = Process_getCurrentId(), parentPID = Process_getParentId(), timestamp = time(NULL);
-    if (relocated) {
+    if (NULL != relocated) {
         fprintf(gStream,
                 "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"func\": \"%s\", \"line\": %d, \"address\": {\"from\": \"%p\", \"to\": \"%p\"}, \"size\": %zu, \"timestamp\": %lu}\n",
                 PID, parentPID, call, file, func, line, relocated, address, size, timestamp);
@@ -138,4 +132,6 @@ void Watchdog_report(const char *const call, const char *file, const char *func,
                 "{\"PID\": %ld, \"parentPID\": %ld, \"call\": \"%s\", \"file\": \"%s\", \"func\": \"%s\", \"line\": %d, \"address\": \"%p\", \"size\": %zu, \"timestamp\": %lu}\n",
                 PID, parentPID, call, file, func, line, address, size, timestamp);
     }
+
+    fflush(gStream);
 }

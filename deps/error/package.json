@@ -1,7 +1,7 @@
 {
   "name": "error",
   "repo": "daddinuz/error",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "Errors representation.",
   "keywords": [

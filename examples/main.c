@@ -32,46 +32,79 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <panic/panic.h>
 #include <process/process.h>
 
-void doSomething(void) {
-    char *buffer = calloc(64, sizeof(buffer[0]));
-    printf("%.*s", snprintf(buffer, 63, "%d:%lu", Process_getCurrentId(), time(NULL)), buffer);
+#define BUFFER_SIZE 64
+
+void leaking(void) {
+    char *buffer = calloc(BUFFER_SIZE + 1, sizeof(buffer[0]));
+    snprintf(buffer, BUFFER_SIZE, "%d:%lu", Process_getCurrentId(), time(NULL));
+    printf("%s", buffer);
+    Process_sleep(5);
+}
+
+void nonLeaking(void) {
+    char *buffer = calloc(BUFFER_SIZE / 3, sizeof(buffer[0]));
+    buffer = realloc(buffer, (BUFFER_SIZE + 1) * sizeof(buffer[0]));
+    snprintf(buffer, BUFFER_SIZE, "%d:%lu", Process_getCurrentId(), time(NULL));
+    printf("%s", buffer);
     free(buffer);
+    Process_sleep(2);
 }
 
 int main(void) {
-    char buffer[64] = "";
-    const size_t bufferSize = sizeof(buffer) / sizeof(buffer[0]) - 1;
+    Error error;
+    char *buffer = malloc((BUFFER_SIZE + 1) * sizeof(buffer[0]));
+    struct Process leakingProcess, nonLeakingProcess;
     struct Process_ExitInfo info;
-    struct Process processesArray[2];
-    const struct Process *processesArrayEnd = &processesArray[sizeof(processesArray) / sizeof(processesArray[0])];
+    long bytesRead;
 
-    for (struct Process *process = processesArray; process < processesArrayEnd; process++) {
-        if (Process_spawn(process, doSomething) != Ok) {
+    {   // spawn leaking process
+        if (Process_spawn(&leakingProcess, leaking) != Ok) {
             Panic_terminate("Unable to fork");
         }
-        printf("Spawned process: %d\n", Process_id(process));
+        printf("Spawned process: %d\n", Process_id(&leakingProcess));
     }
 
-    for (struct Process *process = processesArray; process < processesArrayEnd; process++) {
-        const Error e = Process_isAlive(process) ? Process_wait(process, &info) : Process_exitInfo(process, &info);
-        if (e != Ok) {
-            Panic_terminate("%s", Error_explain(e));
+    {   // spawn non leaking process
+        if (Process_spawn(&nonLeakingProcess, nonLeaking) != Ok) {
+            Panic_terminate("Unable to fork");
         }
-        const long bytesRead = Process_readOutputStream(process, buffer, bufferSize);
+        printf("Spawned process: %d\n", Process_id(&nonLeakingProcess));
+    }
+
+    {   // wait leaking process
+        error = Process_isAlive(&leakingProcess) ?
+                Process_wait(&leakingProcess, &info) :
+                Process_exitInfo(&leakingProcess, &info);
+        if (error != Ok) {
+            Panic_terminate("%s", Error_explain(error));
+        }
+        bytesRead = Process_readOutputStream(&leakingProcess, buffer, BUFFER_SIZE);
         if (bytesRead < 0) {
-            Panic_terminate("Unexpected error while reading from output stream of process: %d", Process_id(process));
+            Panic_terminate("Unexpected error while reading from output stream of process: %d",
+                            Process_id(&leakingProcess));
         }
         printf("Process: %d exitNormally: %d exitValue: %2d output: %.*s\n",
-               Process_id(process), info.exitNormally, info.exitValue, (int) bytesRead, buffer);
-        Process_teardown(process);
+               Process_id(&leakingProcess), info.exitNormally, info.exitValue, (int) bytesRead, buffer);
     }
 
-    void *a = aligned_alloc(alignof(max_align_t), 32);
-    void *b = malloc(16);
-    void *c = malloc(32);
-    (void) a; // free(a);
-    b = realloc(b, 32);
-    (void) b; // free(b);
-    free(c);
+    {   // wait non leaking process
+        error = Process_isAlive(&nonLeakingProcess) ?
+                Process_wait(&nonLeakingProcess, &info) :
+                Process_exitInfo(&nonLeakingProcess, &info);
+        if (error != Ok) {
+            Panic_terminate("%s", Error_explain(error));
+        }
+        bytesRead = Process_readOutputStream(&nonLeakingProcess, buffer, BUFFER_SIZE);
+        if (bytesRead < 0) {
+            Panic_terminate("Unexpected error while reading from output stream of process: %d",
+                            Process_id(&nonLeakingProcess));
+        }
+        printf("Process: %d exitNormally: %d exitValue: %2d output: %.*s\n",
+               Process_id(&nonLeakingProcess), info.exitNormally, info.exitValue, (int) bytesRead, buffer);
+    }
+
+    Process_teardown(&nonLeakingProcess);
+    Process_teardown(&leakingProcess);
+    free(buffer);
     return 0;
 }

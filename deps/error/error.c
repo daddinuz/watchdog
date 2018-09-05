@@ -40,6 +40,7 @@ Error IllegalState = Error_new("Illegal state");
 Error LookupError = Error_new("Lookup error");
 Error MathError = Error_new("Math error");
 Error MemoryError = Error_new("Memory error");
+Error NullReferenceError = Error_new("Null reference error");
 Error OutOfMemory = Error_new("Out of memory");
 Error SystemError = Error_new("System error");
 Error StopIteration = Error_new("Stop iteration");

@@ -1,5 +1,4 @@
-Watchdog
-=========
+# Watchdog
 
 Watchdog is a C99-compliant runtime dynamically-allocated memory-tracer library that may come in handy at the 
 development stage, during a memory leak hunting session, or while analyzing the memory bottle-neck of you program.
@@ -23,7 +22,7 @@ Watchdog does not trace external libraries, it only traces those ones in which i
 ### How to turn it off?
  
 If NDEBUG is defined, watchdog is automatically disabled so that programs will run with zero overhead, 
-using the standard allocators in "stdlib.h". 
+using the standard allocators in "stdlib.h".
 
 ### Recommendations
 

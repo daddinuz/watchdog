@@ -40,12 +40,12 @@ __attribute__(...)
 extern "C" {
 #endif
 
-#define PROCESS_VERSION_MAJOR        0
-#define PROCESS_VERSION_MINOR        2
-#define PROCESS_VERSION_PATCH        0
-#define PROCESS_VERSION_SUFFIX       ""
-#define PROCESS_VERSION_IS_RELEASE   0
-#define PROCESS_VERSION_HEX          0x000200
+#define PROCESS_VERSION_MAJOR       0
+#define PROCESS_VERSION_MINOR       3
+#define PROCESS_VERSION_PATCH       0
+#define PROCESS_VERSION_SUFFIX      ""
+#define PROCESS_VERSION_IS_RELEASE  0
+#define PROCESS_VERSION_HEX         0x000300
 
 extern const Error Process_UnableToFork;
 
